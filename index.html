@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ประทับตรา สำเนาถูกต้อง</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Poppins", sans-serif;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            background: #FFFFFF;
+            padding: 20px;
+        }
+        ::selection {
+            color: #FFFFFF;
+            background: #2E3192;
+        }
+        .wrapper {
+            width: 450px;
+            background: #FFFFFF;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border: 1px solid #E9ECEF;
+        }
+        .wrapper header {
+            color: #2E3192;
+            font-size: 28px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .wrapper form {
+            height: 180px;
+            display: flex;
+            cursor: pointer;
+            margin: 20px 0;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            border-radius: 10px;
+            border: 2px dashed #2E3192;
+            background: #F8F9FA;
+            transition: all 0.3s ease;
+        }
+        .wrapper form:hover {
+            background: #F4F5F7;
+            border-color: #1A237E;
+        }
+        form :where(i, p) {
+            color: #2E3192;
+        }
+        form i {
+            font-size: 50px;
+        }
+        form p {
+            margin-top: 15px;
+            font-size: 16px;
+            color: #555555;
+        }
+        section .row {
+            margin-bottom: 12px;
+            background: #F8F9FA;
+            list-style: none;
+            padding: 15px 20px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: background 0.3s ease;
+        }
+        section .row:hover {
+            background: #F4A261;
+            color: #FFFFFF;
+        }
+        section .row:hover i {
+            color: #FFFFFF;
+        }
+        section .row i {
+            color: #2E3192;
+            font-size: 30px;
+        }
+        section .details span {
+            font-size: 14px;
+            color: #666666;
+        }
+        .progress-area .row .content {
+            width: 100%;
+            margin-left: 15px;
+        }
+        .progress-area .details {
+            display: flex;
+            align-items: center;
+            margin-bottom: 7px;
+            justify-content: space-between;
+        }
+        .progress-area .content .progress-bar {
+            height: 6px;
+            width: 100%;
+            margin-bottom: 4px;
+            background: #E9ECEF;
+            border-radius: 30px;
+        }
+        .content .progress-bar .progress {
+            height: 100%;
+            width: 0%;
+            background: #2E3192;
+            border-radius: inherit;
+            transition: width 0.3s ease;
+        }
+        .uploaded-area {
+            max-height: 232px;
+            overflow-y: scroll;
+        }
+        .uploaded-area.onprogress {
+            max-height: 150px;
+        }
+        .uploaded-area::-webkit-scrollbar {
+            width: 0px;
+        }
+        .uploaded-area .row .content {
+            display: flex;
+            align-items: center;
+        }
+        .uploaded-area .row .details {
+            display: flex;
+            margin-left: 15px;
+            flex-direction: column;
+        }
+        .uploaded-area .row .details .size {
+            color: #777777;
+            font-size: 11px;
+        }
+        .uploaded-area i.fa-check {
+            font-size: 16px;
+            color: #2E3192;
+        }
+        canvas {
+            border: 1px solid #E9ECEF;
+            margin: 20px auto;
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        }
+        #position-buttons {
+            margin: 20px 0;
+            display: none;
+            text-align: center;
+        }
+        button {
+            padding: 12px 25px;
+            margin: 5px;
+            cursor: pointer;
+            background-color: #2E3192;
+            color: #FFFFFF;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+        button:hover {
+            background-color: #1A237E;
+            transform: translateY(-2px);
+        }
+        .stamp {
+            display: none;
+        }
+        .name-input-container {
+            margin: 20px 0;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .name-input-container label {
+            color: #2E3192;
+            font-size: 16px;
+            font-weight: 500;
+            margin-right: 20px;
+        }
+        .name-input-container input[type="text"] {
+            padding: 12px 18px;
+            font-size: 16px;
+            border: 2px solid #2E3192;
+            border-radius: 10px;
+            width: 320px;
+            outline: none;
+            background: #F8F9FA;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+        .name-input-container input[type="text"]:focus {
+            border-color: #1A237E;
+            box-shadow: 0 0 10px rgba(46, 49, 146, 0.3);
+            background: #FFFFFF;
+        }
+        .underline-option {
+            margin: 15px 0;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .underline-option input[type="checkbox"] {
+            display: none;
+        }
+        .underline-option .checkbox-custom {
+            width: 28px;
+            height: 28px;
+            border: 2px solid #2E3192;
+            border-radius: 6px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            background: #F8F9FA;
+            transition: all 0.3s ease;
+            margin-right: 12px;
+        }
+        .underline-option .checkbox-custom:hover {
+            border-color: #1A237E;
+        }
+        .underline-option input[type="checkbox"]:checked + .checkbox-custom {
+            background: #2E3192;
+            border-color: #1A237E;
+        }
+        .underline-option input[type="checkbox"]:checked + .checkbox-custom::after {
+            content: '\2713';
+            color: #FFFFFF;
+            font-size: 18px;
+        }
+        .underline-option label {
+            color: #2E3192;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .swal2-title {
+            color: #2E3192 !important;
+            font-size: 24px !important;
+            font-weight: 600 !important;
+        }
+        .swal2-html-container {
+            color: #555555 !important;
+            font-size: 16px !important;
+        }
+        .swal2-confirm {
+            background-color: #2E3192 !important;
+            border-radius: 8px !important;
+            font-size: 16px !important;
+            padding: 12px 25px !important;
+            transition: background-color 0.3s ease !important;
+        }
+        .swal2-confirm:hover {
+            background-color: #1A237E !important;
+        }
+        .swal2-cancel {
+            background-color: #F4A261 !important;
+            border-radius: 8px !important;
+            font-size: 16px !important;
+            padding: 12px 25px !important;
+            transition: background-color 0.3s ease !important;
+        }
+        .swal2-cancel:hover {
+            background-color: #E88C3A !important;
+        }
+        .swal2-popup {
+            border-radius: 12px !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #E9ECEF !important;
+        }
+        .swal2-icon {
+            border-color: #2E3192 !important;
+            color: #2E3192 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="wrapper">
+        <header>ประทับตรา สำเนาถูกต้อง</header>
+        <form action="#">
+            <input class="file-input" type="file" name="file" accept="image/*,application/pdf" hidden>
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Browse File to Upload</p>
+        </form>
+        <section class="progress-area"></section>
+        <section class="uploaded-area"></section>
+    </div>
+    <div class="name-input-container">
+        <label for="custom-name">ชื่อสำหรับประทับตรา:</label>
+        <input type="text" id="custom-name" value="นางสาวชลธิดา เสรีรัตน์วิภาชัย">
+    </div>
+    <div class="underline-option">
+        <input type="checkbox" id="underline" checked>
+        <div class="checkbox-custom" onclick="document.getElementById('underline').click()"></div>
+        <label for="underline">แสดงเส้นสำหรับเซ็นต์ชื่อ</label>
+    </div>
+    <div id="position-buttons">
+        <button onclick="setStampPosition('bottom-left')">ล่างซ้าย</button>
+        <button onclick="setStampPosition('bottom-center')">ล่างกลาง</button>
+        <button onclick="setStampPosition('bottom-right')">ล่างขวา</button>
+    </div>
+    <canvas id="canvas"></canvas>
+    <div id="stamp" class="stamp">
+        สำเนาถูกต้อง
+        ____________________
+        (นายชัชวาลย์ ทะสิละ)
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const { jsPDF } = window.jspdf;
+        let currentFileType = '';
+        let imgData = null;
+        let pdfDoc = null;
+        let stampPosition = 'bottom-center';
+        let positionChangeTimeout = null;
+
+        const form = document.querySelector("form"),
+              fileInput = document.querySelector(".file-input"),
+              progressArea = document.querySelector(".progress-area"),
+              uploadedArea = document.querySelector(".uploaded-area"),
+              positionButtons = document.getElementById('position-buttons');
+
+        form.addEventListener("click", () => {
+            fileInput.click();
+        });
+
+        fileInput.onchange = ({target}) => {
+            let files = target.files;
+            if (files.length > 0) {
+                positionButtons.style.display = 'none';
+                progressArea.innerHTML = '';
+                uploadedArea.innerHTML = '';
+                Array.from(files).forEach(file => {
+                    let fileName = file.name;
+                    if (fileName.length >= 12) {
+                        let splitName = fileName.split('.');
+                        fileName = splitName[0].substring(0, 13) + "... ." + splitName[1];
+                    }
+                    uploadFile(file, fileName);
+                });
+            }
+        };
+
+        function uploadFile(file, name) {
+            const reader = new FileReader();
+
+            reader.onprogress = ({loaded, total}) => {
+                let fileLoaded = Math.floor((loaded / total) * 100);
+                let fileTotal = Math.floor(total / 1000);
+                let fileSize = (fileTotal < 1024) ? fileTotal + " KB" : (loaded / (1024*1024)).toFixed(2) + " MB";
+                let progressHTML = `<li class="row">
+                                      <i class="fas fa-file-alt"></i>
+                                      <div class="content">
+                                        <div class="details">
+                                          <span class="name">${name} • Uploading</span>
+                                          <span class="percent">${fileLoaded}%</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                          <div class="progress" style="width: ${fileLoaded}%"></div>
+                                        </div>
+                                      </div>
+                                    </li>`;
+                uploadedArea.classList.add("onprogress");
+                progressArea.innerHTML = progressHTML;
+            };
+
+            reader.onload = async (e) => {
+                progressArea.innerHTML = "";
+                let fileTotal = Math.floor(file.size / 1000);
+                let fileSize = (fileTotal < 1024) ? fileTotal + " KB" : (file.size / (1024*1024)).toFixed(2) + " MB";
+                let uploadedHTML = `<li class="row">
+                                      <div class="content upload">
+                                        <i class="fas fa-file-alt"></i>
+                                        <div class="details">
+                                          <span class="name">${name} • Uploaded</span>
+                                          <span class="size">${fileSize}</span>
+                                        </div>
+                                      </div>
+                                      <i class="fas fa-check"></i>
+                                    </li>`;
+                uploadedArea.classList.remove("onprogress");
+                uploadedArea.insertAdjacentHTML("afterbegin", uploadedHTML);
+
+                if (uploadedArea.children.length === 1) {
+                    const canvas = document.getElementById('canvas');
+                    if (file.type.startsWith('image/')) {
+                        currentFileType = 'image';
+                        imgData = e.target.result;
+                        renderImage(imgData);
+                        // แสดงตราประทับที่ล่างกลางทันทีหลังอัปโหลด
+                        drawStamp(canvas, null, canvas.width, canvas.height);
+                        positionButtons.style.display = 'block';
+                    } else if (file.type === 'application/pdf') {
+                        currentFileType = 'pdf';
+                        const typedArray = new Uint8Array(e.target.result);
+                        try {
+                            pdfDoc = await pdfjsLib.getDocument({ data: typedArray }).promise;
+                            await renderPDF(pdfDoc, 1);
+                            // แสดงตราประทับที่ล่างกลางทันทีหลังอัปโหลด
+                            drawStamp(canvas, null, canvas.width, canvas.height);
+                            positionButtons.style.display = 'block';
+                        } catch (error) {
+                            console.error("Error loading PDF:", error);
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'เกิดข้อผิดพลาด',
+                                text: 'ไม่สามารถโหลดไฟล์ PDF ได้',
+                                confirmButtonText: 'ตกลง'
+                            });
+                        }
+                    }
+                }
+            };
+
+            reader.onerror = () => {
+                console.error("Error reading file");
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถอ่านไฟล์ได้',
+                    confirmButtonText: 'ตกลง'
+                });
+            };
+
+            if (file.type.startsWith('image/')) {
+                reader.readAsDataURL(file);
+            } else if (file.type === 'application/pdf') {
+                reader.readAsArrayBuffer(file);
+            }
+        }
+
+        function renderImage(imgData) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            img.onload = function() {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+            };
+            img.onerror = function() {
+                console.error("Error loading image");
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถโหลดภาพได้',
+                    confirmButtonText: 'ตกลง'
+                });
+            };
+            img.src = imgData;
+        }
+
+        async function renderPDF(pdfDoc, pageNum) {
+            try {
+                const page = await pdfDoc.getPage(pageNum);
+                const viewport = page.getViewport({ scale: 2.0 });
+                const canvas = document.getElementById('canvas');
+                const ctx = canvas.getContext('2d');
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                const renderContext = {
+                    canvasContext: ctx,
+                    viewport: viewport
+                };
+                await page.render(renderContext).promise;
+            } catch (error) {
+                console.error("Error rendering PDF:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'เกิดข้อผิดพลาด',
+                    text: 'ไม่สามารถแสดง PDF ได้',
+                    confirmButtonText: 'ตกลง'
+                });
+            }
+        }
+
+        function setStampPosition(position) {
+            // ล้าง timeout เดิม (ถ้ามี) เพื่อป้องกัน popup ซ้ำ
+            if (positionChangeTimeout) {
+                clearTimeout(positionChangeTimeout);
+            }
+
+            // อัปเดตตำแหน่ง
+            stampPosition = position;
+            const canvas = document.getElementById('canvas');
+
+            // แสดงตัวอย่างตราประทับทันที
+            if (currentFileType === 'image' && imgData) {
+                renderImage(imgData);
+                drawStamp(canvas, null, canvas.width, canvas.height);
+            } else if (currentFileType === 'pdf' && pdfDoc) {
+                renderPDF(pdfDoc, 1).then(() => {
+                    drawStamp(canvas, null, canvas.width, canvas.height);
+                });
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'คำเตือน',
+                    text: 'กรุณารอให้ไฟล์โหลดเสร็จสมบูรณ์ก่อนดำเนินการ',
+                    confirmButtonText: 'ตกลง'
+                });
+                return;
+            }
+
+            // รอ 5 วินาทีแล้วแสดง popup ยืนยัน
+            positionChangeTimeout = setTimeout(() => {
+                Swal.fire({
+                    title: 'ยืนยันตำแหน่งตราประทับ',
+                    text: `คุณเลือกตำแหน่ง "${getPositionText(position)}" ต้องการยืนยันหรือไม่?`,
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonText: 'ยืนยัน',
+                    cancelButtonText: 'ยกเลิก',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // ดาวน์โหลดไฟล์เมื่อยืนยัน
+                        downloadFile();
+                    } else {
+                        // รีเซ็ตตำแหน่งกลับไปที่ล่างกลาง
+                        stampPosition = 'bottom-center';
+                        if (currentFileType === 'image' && imgData) {
+                            renderImage(imgData);
+                            drawStamp(canvas, null, canvas.width, canvas.height);
+                        } else if (currentFileType === 'pdf' && pdfDoc) {
+                            renderPDF(pdfDoc, 1).then(() => {
+                                drawStamp(canvas, null, canvas.width, canvas.height);
+                            });
+                        }
+                    }
+                });
+            }, 5000); // 5 วินาที
+        }
+
+        function getPositionText(position) {
+            switch (position) {
+                case 'bottom-left': return 'ล่างซ้าย';
+                case 'bottom-center': return 'ล่างกลาง';
+                case 'bottom-right': return 'ล่างขวา';
+                default: return '';
+            }
+        }
+
+        function drawStamp(canvas, callback, pageWidth, pageHeight) {
+            const ctx = canvas.getContext('2d');
+            ctx.font = 'bold 32px Arial';
+            ctx.fillStyle = '#1976d2';
+
+            const customName = document.getElementById('custom-name').value || "นางสาวชลธิดา เสรีรัตน์วิภาชัย";
+            const showUnderline = document.getElementById('underline').checked;
+
+            let stampText = "สำเนาถูกต้อง\n";
+            if (showUnderline) {
+                stampText += "____________________\n";
+            }
+            stampText += `(${customName})`;
+
+            const lines = stampText.split('\n');
+            const lineHeight = 60;
+
+            let x, y;
+            const maxWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
+
+            if (stampPosition === 'bottom-left') {
+                x = 40;
+                y = pageHeight - (lines.length * lineHeight) - 40;
+            } else if (stampPosition === 'bottom-center') {
+                x = (pageWidth - maxWidth) / 2;
+                y = pageHeight - (lines.length * lineHeight) - 40;
+            } else if (stampPosition === 'bottom-right') {
+                x = pageWidth - maxWidth - 40;
+                y = pageHeight - (lines.length * lineHeight) - 40;
+            }
+
+            lines.forEach((line, index) => {
+                const lineWidth = ctx.measureText(line).width;
+                const offsetX = (maxWidth - lineWidth) / 2;
+                ctx.fillText(line, x + offsetX, y + (index * lineHeight));
+            });
+
+            if (callback) callback();
+        }
+
+        async function downloadFile() {
+            const canvas = document.getElementById('canvas');
+            if (currentFileType === 'image') {
+                const link = document.createElement('a');
+                link.download = 'stamped_image.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'ดาวน์โหลดสำเร็จ',
+                    text: 'ไฟล์ภาพของคุณได้ถูกดาวน์โหลดแล้ว!',
+                    confirmButtonText: 'ตกลง',
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+            } else if (currentFileType === 'pdf' && pdfDoc) {
+                try {
+                    const numPages = pdfDoc.numPages;
+                    let pdf = null;
+
+                    for (let i = 1; i <= numPages; i++) {
+                        const page = await pdfDoc.getPage(i);
+                        const viewport = page.getViewport({ scale: 2.0 });
+                        const originalViewport = page.getViewport({ scale: 1.0 });
+
+                        canvas.width = viewport.width;
+                        canvas.height = viewport.height;
+                        const ctx = canvas.getContext('2d');
+                        const renderContext = {
+                            canvasContext: ctx,
+                            viewport: viewport
+                        };
+                        await page.render(renderContext).promise;
+
+                        drawStamp(canvas, null, viewport.width, viewport.height);
+
+                        const pageWidth = originalViewport.width / 72 * 25.4;
+                        const pageHeight = originalViewport.height / 72 * 25.4;
+
+                        if (i === 1) {
+                            pdf = new jsPDF({
+                                orientation: pageWidth > pageHeight ? 'landscape' : 'portrait',
+                                unit: 'mm',
+                                format: [pageWidth, pageHeight]
+                            });
+                        } else {
+                            pdf.addPage([pageWidth, pageHeight], pageWidth > pageHeight ? 'landscape' : 'portrait');
+                        }
+
+                        const imgData = canvas.toDataURL('image/png', 1.0);
+                        pdf.setPage(i);
+                        pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight, null, 'SLOW');
+                    }
+
+                    pdf.save('stamped_pdf.pdf');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'ดาวน์โหลดสำเร็จ',
+                        text: 'ไฟล์ PDF ของคุณได้ถูกดาวน์โหลดแล้ว!',
+                        confirmButtonText: 'ตกลง',
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                } catch (error) {
+                    console.error("Error downloading PDF:", error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'เกิดข้อผิดพลาด',
+                        text: 'ไม่สามารถดาวน์โหลด PDF ได้',
+                        confirmButtonText: 'ตกลง'
+                    });
+                }
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'คำเตือน',
+                    text: 'กรุณารอให้ไฟล์ PDF โหลดเสร็จสมบูรณ์ก่อนดำเนินการ',
+                    confirmButtonText: 'ตกลง'
+                });
+            }
+        }
+    </script>
+</body>
+</html>
