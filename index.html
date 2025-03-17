@@ -283,7 +283,7 @@
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         }
         .color-option #color-blue {
-            background-color: #000080; /* เปลี่ยนเป็นสีน้ำเงินเข้ม (Navy Blue) */
+            background-color: #000080;
             color: #FFFFFF;
         }
         .color-option #color-black {
@@ -412,8 +412,9 @@
         let pdfDoc = null;
         let stampPosition = 'bottom-center';
         let positionChangeTimeout = null;
-        let stampColor = '#000080'; // เปลี่ยนเป็นสีน้ำเงินเข้ม (Navy Blue)
+        let stampColor = '#000080'; // ค่าเริ่มต้นเป็นน้ำเงินเข้ม
         let lineSpacing = 60; // ค่าเริ่มต้นของระยะห่างระหว่างบรรทัด
+        let uploadTimeout = null; // ตัวแปรสำหรับเก็บ timeout
 
         const form = document.querySelector("form"),
               fileInput = document.querySelector(".file-input"),
@@ -440,6 +441,11 @@
         fileInput.onchange = ({target}) => {
             let files = target.files;
             if (files.length > 0) {
+                // ล้าง timeout เก่า (ถ้ามี) เพื่อป้องกัน Popup ซ้ำ
+                if (uploadTimeout) {
+                    clearTimeout(uploadTimeout);
+                }
+
                 positionButtons.style.display = 'none';
                 progressArea.innerHTML = '';
                 uploadedArea.innerHTML = '';
@@ -520,6 +526,11 @@
                     }
                     // แสดงตราประทับที่ล่างกลางทันทีหลังอัปโหลด
                     drawStamp(canvas, null, canvas.width, canvas.height);
+
+                    // ตั้งเวลา 10 วินาทีเพื่อแสดง Popup
+                    uploadTimeout = setTimeout(() => {
+                        showSummaryPopup();
+                    }, 10000);
                 }
             };
 
@@ -537,6 +548,44 @@
                 reader.readAsDataURL(file);
             } else if (file.type === 'application/pdf') {
                 reader.readAsArrayBuffer(file);
+            }
+        }
+
+        function showSummaryPopup() {
+            const customName = document.getElementById('custom-name').value || "นางสาวชลธิดา เสรีรัตน์วิภาชัย";
+            const showUnderline = document.getElementById('underline').checked;
+            const colorName = getColorName(stampColor);
+            const positionText = getPositionText(stampPosition);
+
+            Swal.fire({
+                title: 'สรุปการตั้งค่า',
+                html: `
+                    <div style="text-align: left; font-size: 16px;">
+                        <p><strong>ชื่อ:</strong> ${customName}</p>
+                        <p><strong>สีตัวอักษร:</strong> ${colorName}</p>
+                        <p><strong>ระยะห่างระหว่างบรรทัด:</strong> ${lineSpacing} px</p>
+                        <p><strong>ตำแหน่งตราประทับ:</strong> ${positionText}</p>
+                        <p><strong>แสดงเส้นสำหรับเซ็นต์ชื่อ:</strong> ${showUnderline ? 'ใช่' : 'ไม่'}</p>
+                    </div>
+                `,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonText: 'ยืนยัน',
+                cancelButtonText: 'ยกเลิก',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    downloadFile();
+                }
+            });
+        }
+
+        function getColorName(color) {
+            switch (color) {
+                case '#000080': return 'น้ำเงิน';
+                case '#000000': return 'ดำ';
+                case '#FF0000': return 'แดง';
+                default: return 'ไม่ระบุ';
             }
         }
 
