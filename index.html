@@ -248,6 +248,80 @@
             font-weight: 500;
             cursor: pointer;
         }
+        .color-option {
+            margin: 15px 0;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .color-option label {
+            color: #2E3192;
+            font-size: 16px;
+            font-weight: 500;
+            margin-right: 20px;
+        }
+        .color-option button {
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            width: 80px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        .color-option button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+        .color-option #color-blue {
+            background-color: #000080; /* เปลี่ยนเป็นสีน้ำเงินเข้ม (Navy Blue) */
+            color: #FFFFFF;
+        }
+        .color-option #color-black {
+            background-color: #000000;
+            color: #FFFFFF;
+        }
+        .color-option #color-red {
+            background-color: #FF0000;
+            color: #FFFFFF;
+        }
+        .spacing-option {
+            margin: 15px 0;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .spacing-option label {
+            color: #2E3192;
+            font-size: 16px;
+            font-weight: 500;
+            margin-right: 20px;
+        }
+        .spacing-option input[type="number"] {
+            padding: 8px 12px;
+            font-size: 16px;
+            border: 2px solid #2E3192;
+            border-radius: 8px;
+            width: 80px;
+            outline: none;
+            background: #F8F9FA;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+        }
+        .spacing-option input[type="number"]:focus {
+            border-color: #1A237E;
+            box-shadow: 0 0 8px rgba(46, 49, 146, 0.3);
+            background: #FFFFFF;
+        }
         .swal2-title {
             color: #2E3192 !important;
             font-size: 24px !important;
@@ -308,6 +382,16 @@
         <div class="checkbox-custom" onclick="document.getElementById('underline').click()"></div>
         <label for="underline">แสดงเส้นสำหรับเซ็นต์ชื่อ</label>
     </div>
+    <div class="color-option">
+        <label>เลือกสีตัวอักษร:</label>
+        <button id="color-blue" onclick="setStampColor('#000080')">น้ำเงิน</button>
+        <button id="color-black" onclick="setStampColor('#000000')">ดำ</button>
+        <button id="color-red" onclick="setStampColor('#FF0000')">แดง</button>
+    </div>
+    <div class="spacing-option">
+        <label for="line-spacing">ระยะห่างระหว่างบรรทัด (px):</label>
+        <input type="number" id="line-spacing" value="60" min="0" step="1">
+    </div>
     <div id="position-buttons">
         <button onclick="setStampPosition('bottom-left')">ล่างซ้าย</button>
         <button onclick="setStampPosition('bottom-center')">ล่างกลาง</button>
@@ -328,15 +412,29 @@
         let pdfDoc = null;
         let stampPosition = 'bottom-center';
         let positionChangeTimeout = null;
+        let stampColor = '#000080'; // เปลี่ยนเป็นสีน้ำเงินเข้ม (Navy Blue)
+        let lineSpacing = 60; // ค่าเริ่มต้นของระยะห่างระหว่างบรรทัด
 
         const form = document.querySelector("form"),
               fileInput = document.querySelector(".file-input"),
               progressArea = document.querySelector(".progress-area"),
               uploadedArea = document.querySelector(".uploaded-area"),
-              positionButtons = document.getElementById('position-buttons');
+              positionButtons = document.getElementById('position-buttons'),
+              lineSpacingInput = document.getElementById('line-spacing');
 
         form.addEventListener("click", () => {
             fileInput.click();
+        });
+
+        // เพิ่ม event listener สำหรับการเปลี่ยนระยะห่าง
+        lineSpacingInput.addEventListener('input', () => {
+            lineSpacing = parseInt(lineSpacingInput.value) || 60; // อัปเดตค่า lineSpacing
+            const canvas = document.getElementById('canvas');
+            if (currentFileType === 'image' && imgData) {
+                renderImage(imgData);
+            } else if (currentFileType === 'pdf' && pdfDoc) {
+                renderPDF(pdfDoc, 1);
+            }
         });
 
         fileInput.onchange = ({target}) => {
@@ -402,8 +500,6 @@
                         currentFileType = 'image';
                         imgData = e.target.result;
                         renderImage(imgData);
-                        // แสดงตราประทับที่ล่างกลางทันทีหลังอัปโหลด
-                        drawStamp(canvas, null, canvas.width, canvas.height);
                         positionButtons.style.display = 'block';
                     } else if (file.type === 'application/pdf') {
                         currentFileType = 'pdf';
@@ -411,8 +507,6 @@
                         try {
                             pdfDoc = await pdfjsLib.getDocument({ data: typedArray }).promise;
                             await renderPDF(pdfDoc, 1);
-                            // แสดงตราประทับที่ล่างกลางทันทีหลังอัปโหลด
-                            drawStamp(canvas, null, canvas.width, canvas.height);
                             positionButtons.style.display = 'block';
                         } catch (error) {
                             console.error("Error loading PDF:", error);
@@ -424,6 +518,8 @@
                             });
                         }
                     }
+                    // แสดงตราประทับที่ล่างกลางทันทีหลังอัปโหลด
+                    drawStamp(canvas, null, canvas.width, canvas.height);
                 }
             };
 
@@ -452,6 +548,7 @@
                 canvas.width = img.width;
                 canvas.height = img.height;
                 ctx.drawImage(img, 0, 0);
+                drawStamp(canvas, null, canvas.width, canvas.height); // อัปเดตตราประทับทันที
             };
             img.onerror = function() {
                 console.error("Error loading image");
@@ -478,6 +575,7 @@
                     viewport: viewport
                 };
                 await page.render(renderContext).promise;
+                drawStamp(canvas, null, canvas.width, canvas.height); // อัปเดตตราประทับทันที
             } catch (error) {
                 console.error("Error rendering PDF:", error);
                 Swal.fire({
@@ -490,23 +588,17 @@
         }
 
         function setStampPosition(position) {
-            // ล้าง timeout เดิม (ถ้ามี) เพื่อป้องกัน popup ซ้ำ
             if (positionChangeTimeout) {
                 clearTimeout(positionChangeTimeout);
             }
 
-            // อัปเดตตำแหน่ง
             stampPosition = position;
             const canvas = document.getElementById('canvas');
 
-            // แสดงตัวอย่างตราประทับทันที
             if (currentFileType === 'image' && imgData) {
                 renderImage(imgData);
-                drawStamp(canvas, null, canvas.width, canvas.height);
             } else if (currentFileType === 'pdf' && pdfDoc) {
-                renderPDF(pdfDoc, 1).then(() => {
-                    drawStamp(canvas, null, canvas.width, canvas.height);
-                });
+                renderPDF(pdfDoc, 1);
             } else {
                 Swal.fire({
                     icon: 'warning',
@@ -517,7 +609,6 @@
                 return;
             }
 
-            // รอ 5 วินาทีแล้วแสดง popup ยืนยัน
             positionChangeTimeout = setTimeout(() => {
                 Swal.fire({
                     title: 'ยืนยันตำแหน่งตราประทับ',
@@ -529,22 +620,17 @@
                     reverseButtons: true
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        // ดาวน์โหลดไฟล์เมื่อยืนยัน
                         downloadFile();
                     } else {
-                        // รีเซ็ตตำแหน่งกลับไปที่ล่างกลาง
                         stampPosition = 'bottom-center';
                         if (currentFileType === 'image' && imgData) {
                             renderImage(imgData);
-                            drawStamp(canvas, null, canvas.width, canvas.height);
                         } else if (currentFileType === 'pdf' && pdfDoc) {
-                            renderPDF(pdfDoc, 1).then(() => {
-                                drawStamp(canvas, null, canvas.width, canvas.height);
-                            });
+                            renderPDF(pdfDoc, 1);
                         }
                     }
                 });
-            }, 5000); // 5 วินาที
+            }, 5000);
         }
 
         function getPositionText(position) {
@@ -559,7 +645,7 @@
         function drawStamp(canvas, callback, pageWidth, pageHeight) {
             const ctx = canvas.getContext('2d');
             ctx.font = 'bold 32px Arial';
-            ctx.fillStyle = '#1976d2';
+            ctx.fillStyle = stampColor; // ใช้สีจาก stampColor
 
             const customName = document.getElementById('custom-name').value || "นางสาวชลธิดา เสรีรัตน์วิภาชัย";
             const showUnderline = document.getElementById('underline').checked;
@@ -571,7 +657,7 @@
             stampText += `(${customName})`;
 
             const lines = stampText.split('\n');
-            const lineHeight = 60;
+            const lineHeight = lineSpacing; // ใช้ค่า lineSpacing ที่ผู้ใช้กำหนด
 
             let x, y;
             const maxWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
@@ -594,6 +680,16 @@
             });
 
             if (callback) callback();
+        }
+
+        function setStampColor(color) {
+            stampColor = color;
+            const canvas = document.getElementById('canvas');
+            if (currentFileType === 'image' && imgData) {
+                renderImage(imgData);
+            } else if (currentFileType === 'pdf' && pdfDoc) {
+                renderPDF(pdfDoc, 1);
+            }
         }
 
         async function downloadFile() {
