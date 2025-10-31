@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>แอปบันทึกการพัฒนาตนเองของครู</title>
+    <title>ระบบบันทึกการพัฒนาตนเองของครู</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
@@ -23,7 +23,7 @@
         }
 
         .container {
-            max-width: 1400px;
+            max-width: 1600px;
             margin: 0 auto;
         }
 
@@ -162,6 +162,11 @@
             gap: 8px;
         }
 
+        .toolbar .btn-category {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
         .toolbar .btn-import {
             background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
             color: white;
@@ -195,12 +200,12 @@
         /* Main Content */
         .main-content {
             display: grid;
-            grid-template-columns: 1fr 2fr;
+            grid-template-columns: 400px 1fr;
             gap: 30px;
             margin-bottom: 30px;
         }
 
-        @media (max-width: 968px) {
+        @media (max-width: 1200px) {
             .main-content {
                 grid-template-columns: 1fr;
             }
@@ -223,25 +228,25 @@
         }
 
         .form-group {
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .form-group label {
             display: block;
             color: #333;
             font-weight: 600;
-            margin-bottom: 8px;
-            font-size: 1rem;
+            margin-bottom: 6px;
+            font-size: 0.95rem;
         }
 
         .form-group input,
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 12px 15px;
+            padding: 10px 12px;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-family: 'Sarabun', sans-serif;
             transition: border-color 0.3s ease;
         }
@@ -255,7 +260,13 @@
 
         .form-group textarea {
             resize: vertical;
-            min-height: 100px;
+            min-height: 80px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
 
         .btn {
@@ -283,7 +294,6 @@
         .btn-secondary {
             background: #f5f5f5;
             color: #333;
-            margin-left: 10px;
         }
 
         .btn-secondary:hover {
@@ -292,7 +302,7 @@
 
         .btn-small {
             padding: 6px 12px;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
 
         .btn-edit {
@@ -302,6 +312,11 @@
 
         .btn-delete {
             background: #f5576c;
+            color: white;
+        }
+
+        .btn-view {
+            background: #667eea;
             color: white;
         }
 
@@ -329,7 +344,7 @@
 
         .filters {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             margin-bottom: 20px;
             flex-wrap: wrap;
             align-items: center;
@@ -337,92 +352,124 @@
 
         .filters select,
         .filters input {
-            padding: 10px 15px;
+            padding: 8px 12px;
             border: 2px solid #e0e0e0;
             border-radius: 10px;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-family: 'Sarabun', sans-serif;
         }
 
         .filters .btn {
-            padding: 10px 20px;
+            padding: 8px 16px;
         }
 
         .logs-list {
-            max-height: 600px;
+            max-height: 700px;
             overflow-y: auto;
         }
 
+        /* Enhanced Log Card */
         .log-card {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-            border-left: 5px solid #667eea;
+            background: white;
+            padding: 0;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #e0e0e0;
             transition: all 0.3s ease;
+            overflow: hidden;
         }
 
         .log-card:hover {
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            transform: translateX(5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
         }
 
-        .log-header {
+        .log-card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 15px 20px;
+            color: white;
             display: flex;
             justify-content: space-between;
-            align-items: start;
+            align-items: center;
+        }
+
+        .log-card-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .log-card-body {
+            padding: 20px;
+        }
+
+        .log-meta-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
             margin-bottom: 15px;
         }
 
-        .log-title {
-            flex: 1;
-        }
-
-        .log-title h3 {
-            color: #333;
-            font-size: 1.3rem;
-            margin-bottom: 5px;
-        }
-
-        .log-meta {
+        .log-meta-item {
             display: flex;
-            gap: 15px;
-            flex-wrap: wrap;
+            align-items: start;
+            gap: 10px;
+        }
+
+        .log-meta-item i {
+            color: #667eea;
+            margin-top: 3px;
+            min-width: 20px;
+        }
+
+        .log-meta-item strong {
             color: #666;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            display: block;
         }
 
-        .log-meta span {
-            display: flex;
-            align-items: center;
-            gap: 5px;
+        .log-meta-item span {
+            color: #333;
+            font-size: 0.95rem;
         }
 
-        .log-category {
+        .log-category-badge {
             display: inline-block;
-            padding: 5px 15px;
+            padding: 6px 15px;
             border-radius: 20px;
             font-size: 0.85rem;
             font-weight: 600;
-            margin-bottom: 10px;
+            margin-right: 5px;
         }
 
-        .category-training { background: #e3f2fd; color: #1976d2; }
-        .category-seminar { background: #f3e5f5; color: #7b1fa2; }
-        .category-selfstudy { background: #e8f5e9; color: #388e3c; }
-        .category-research { background: #fff3e0; color: #f57c00; }
-        .category-plc { background: #fce4ec; color: #c2185b; }
-        .category-other { background: #f5f5f5; color: #616161; }
+        .log-tags {
+            margin: 15px 0;
+        }
+
+        .log-tag {
+            display: inline-block;
+            padding: 4px 12px;
+            background: #f0f0f0;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            margin-right: 5px;
+            margin-bottom: 5px;
+        }
 
         .log-description {
             color: #555;
             line-height: 1.6;
-            margin-bottom: 15px;
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 3px solid #667eea;
         }
 
         .log-actions {
             display: flex;
             gap: 10px;
+            padding-top: 15px;
+            border-top: 1px solid #e0e0e0;
         }
 
         .empty-state {
@@ -456,10 +503,6 @@
             border-radius: 10px;
         }
 
-        .logs-list::-webkit-scrollbar-thumb:hover {
-            background: #5568d3;
-        }
-
         /* Modal styles */
         .modal {
             display: none;
@@ -481,17 +524,21 @@
 
         .modal-content {
             background-color: white;
-            margin: 5% auto;
+            margin: 3% auto;
             padding: 0;
             border-radius: 15px;
             width: 90%;
-            max-width: 600px;
+            max-width: 700px;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
             animation: slideDown 0.3s ease;
         }
 
         .modal-content.large {
-            max-width: 900px;
+            max-width: 1000px;
+        }
+
+        .modal-content.xlarge {
+            max-width: 1200px;
         }
 
         @keyframes slideDown {
@@ -550,6 +597,37 @@
             gap: 10px;
         }
 
+        /* Category Management */
+        .category-list {
+            list-style: none;
+        }
+
+        .category-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .category-item-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .color-picker {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            cursor: pointer;
+        }
+
         /* Hidden file input */
         .hidden-file-input {
             display: none;
@@ -557,13 +635,18 @@
 
         /* Print styles */
         @media print {
+            @page {
+                size: A4;
+                margin: 2cm;
+            }
+
             body {
                 background: white;
                 padding: 0;
             }
 
             .toolbar, .header p, .filters, .search-container,
-            .log-actions, .btn, .stat-card:hover {
+            .log-actions, .btn, .form-container {
                 display: none !important;
             }
 
@@ -571,29 +654,97 @@
                 max-width: 100%;
             }
 
+            .main-content {
+                display: block;
+            }
+
+            .logs-container {
+                box-shadow: none;
+                padding: 0;
+            }
+
             .log-card {
                 page-break-inside: avoid;
                 box-shadow: none;
                 border: 1px solid #ddd;
-                margin-bottom: 10px;
+                margin-bottom: 15px;
             }
 
             .stat-card {
                 box-shadow: none;
                 border: 1px solid #ddd;
             }
+
+            /* Official Report Style */
+            .print-report-header {
+                text-align: center;
+                margin-bottom: 30px;
+                padding-bottom: 20px;
+                border-bottom: 2px solid #000;
+            }
+
+            .print-report-logo {
+                font-size: 2rem;
+                margin-bottom: 10px;
+            }
+
+            .print-report-office {
+                font-size: 1.1rem;
+                font-weight: 600;
+                margin: 5px 0;
+            }
+
+            .print-report-title {
+                font-size: 1.3rem;
+                font-weight: 700;
+                margin: 20px 0;
+                text-align: center;
+            }
+
+            .print-report-meta {
+                margin: 20px 0;
+                line-height: 2;
+            }
+
+            .print-report-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+            }
+
+            .print-report-table th,
+            .print-report-table td {
+                border: 1px solid #000;
+                padding: 8px;
+                text-align: left;
+            }
+
+            .print-report-table th {
+                background: #f0f0f0;
+                font-weight: 700;
+            }
+
+            .print-report-signature {
+                margin-top: 50px;
+                text-align: right;
+            }
+
+            .print-report-signature p {
+                margin: 5px 0;
+                line-height: 2;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1><i class="fas fa-graduation-cap"></i> แอปบันทึกการพัฒนาตนเองของครู</h1>
-            <p>บันทึกและติดตามการพัฒนาวิชาชีพของคุณ</p>
+        <div class="header no-print">
+            <h1><i class="fas fa-graduation-cap"></i> ระบบบันทึกการพัฒนาตนเองของครู</h1>
+            <p>Professional Development Log System</p>
         </div>
 
         <!-- Stats Container -->
-        <div class="stats-container">
+        <div class="stats-container no-print">
             <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fas fa-book-open"></i>
@@ -624,7 +775,7 @@
                 </div>
             </div>
 
-            <div class="stat-card" onclick="openGoalModal()" style="cursor: pointer;">
+            <div class="stat-card" onclick="openGoalModal()">
                 <div class="stat-icon">
                     <i class="fas fa-bullseye"></i>
                 </div>
@@ -640,24 +791,27 @@
         </div>
 
         <!-- Toolbar -->
-        <div class="toolbar">
+        <div class="toolbar no-print">
+            <button class="btn-category" onclick="openCategoryModal()">
+                <i class="fas fa-tags"></i> จัดการประเภท
+            </button>
             <button class="btn-import" onclick="document.getElementById('importFileInput').click()">
-                <i class="fas fa-file-import"></i> นำเข้า JSON
+                <i class="fas fa-file-import"></i> นำเข้า
             </button>
             <button class="btn-export" onclick="exportToJSON()">
                 <i class="fas fa-file-export"></i> ส่งออก JSON
             </button>
             <button class="btn-backup" onclick="backupData()">
-                <i class="fas fa-database"></i> สำรองข้อมูล
+                <i class="fas fa-database"></i> สำรอง
             </button>
             <button class="btn-backup" onclick="document.getElementById('restoreFileInput').click()">
-                <i class="fas fa-upload"></i> กู้คืนข้อมูล
+                <i class="fas fa-upload"></i> กู้คืน
             </button>
             <button class="btn-chart" onclick="openChartModal()">
-                <i class="fas fa-chart-bar"></i> กราฟสถิติ
+                <i class="fas fa-chart-bar"></i> กราฟ
             </button>
-            <button class="btn-print" onclick="window.print()">
-                <i class="fas fa-print"></i> พิมพ์รายงาน
+            <button class="btn-print" onclick="printOfficialReport()">
+                <i class="fas fa-print"></i> รายงานราชการ
             </button>
             <button class="btn-export" onclick="exportToCSV()">
                 <i class="fas fa-file-csv"></i> CSV
@@ -670,40 +824,76 @@
 
         <!-- Main Content -->
         <div class="main-content">
-            <div class="form-container">
+            <div class="form-container no-print">
                 <h2><i class="fas fa-plus-circle"></i> เพิ่มบันทึกใหม่</h2>
                 <form id="logForm">
                     <div class="form-group">
-                        <label for="activityDate">วันที่</label>
+                        <label for="activityDate"><i class="fas fa-calendar"></i> วันที่</label>
                         <input type="date" id="activityDate" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="activityTitle">หัวข้อกิจกรรม</label>
-                        <input type="text" id="activityTitle" placeholder="เช่น อบรมเชิงปฏิบัติการ..." required>
+                        <label for="activityTitle"><i class="fas fa-heading"></i> หัวข้อกิจกรรม</label>
+                        <input type="text" id="activityTitle" placeholder="เช่น การใช้เทคโนโลยีในการจัดการเรียนรู้" required>
                     </div>
 
                     <div class="form-group">
-                        <label for="activityCategory">ประเภทกิจกรรม</label>
+                        <label for="activityCategory"><i class="fas fa-tag"></i> ประเภทกิจกรรม</label>
                         <select id="activityCategory" required>
                             <option value="">-- เลือกประเภท --</option>
-                            <option value="training">อบรม</option>
-                            <option value="seminar">สัมมนา</option>
-                            <option value="selfstudy">ศึกษาด้วยตนเอง</option>
-                            <option value="research">วิจัย</option>
-                            <option value="plc">ชุมชนการเรียนรู้ทางวิชาชีพ (PLC)</option>
-                            <option value="other">อื่นๆ</option>
                         </select>
                     </div>
 
-                    <div class="form-group">
-                        <label for="activityHours">ระยะเวลา (ชั่วโมง)</label>
-                        <input type="number" id="activityHours" min="0" step="0.5" placeholder="เช่น 3" required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="activityHours"><i class="fas fa-clock"></i> ชั่วโมง</label>
+                            <input type="number" id="activityHours" min="0" step="0.5" placeholder="3" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="activityFormat"><i class="fas fa-laptop"></i> รูปแบบ</label>
+                            <select id="activityFormat" required>
+                                <option value="onsite">Onsite</option>
+                                <option value="online">Online</option>
+                                <option value="hybrid">Hybrid</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="activityDescription">รายละเอียด/บันทึกการเรียนรู้</label>
-                        <textarea id="activityDescription" placeholder="บันทึกสิ่งที่ได้เรียนรู้..." required></textarea>
+                        <label for="activityVenue"><i class="fas fa-map-marker-alt"></i> สถานที่</label>
+                        <input type="text" id="activityVenue" placeholder="เช่น โรงแรมมิราเคิล กรุงเทพฯ">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="activityOrganizer"><i class="fas fa-building"></i> ผู้จัด/หน่วยงาน</label>
+                        <input type="text" id="activityOrganizer" placeholder="เช่น สำนักงานเขตพื้นที่การศึกษา">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="activityInstructor"><i class="fas fa-chalkboard-teacher"></i> วิทยากร</label>
+                        <input type="text" id="activityInstructor" placeholder="เช่น ดร.สมชาย ใจดี">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="activityCompetency"><i class="fas fa-star"></i> สมรรถนะที่พัฒนา</label>
+                        <input type="text" id="activityCompetency" placeholder="เช่น ICT, การจัดการเรียนรู้, ภาษาอังกฤษ">
+                        <small style="color: #999;">คั่นด้วยเครื่องหมายจุลภาค (,)</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="activityDescription"><i class="fas fa-file-alt"></i> รายละเอียด/สิ่งที่ได้เรียนรู้</label>
+                        <textarea id="activityDescription" placeholder="บันทึกสิ่งที่ได้เรียนรู้และประโยชน์ที่ได้รับ..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="activityApplication"><i class="fas fa-lightbulb"></i> การนำไปใช้ในการสอน</label>
+                        <textarea id="activityApplication" placeholder="วิธีการนำความรู้ไปประยุกต์ใช้ในห้องเรียน..."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="activityCertificate"><i class="fas fa-certificate"></i> เกียรติบัตร/หลักฐาน</label>
+                        <input type="text" id="activityCertificate" placeholder="URL หรือหมายเหตุเกี่ยวกับเอกสาร">
                     </div>
 
                     <button type="submit" class="btn btn-primary">
@@ -716,20 +906,21 @@
                 <h2><i class="fas fa-list"></i> รายการบันทึก</h2>
 
                 <!-- Search -->
-                <div class="search-container">
-                    <input type="text" id="searchInput" placeholder="ค้นหาบันทึก... (หัวข้อ, รายละเอียด)">
+                <div class="search-container no-print">
+                    <input type="text" id="searchInput" placeholder="ค้นหา... (หัวข้อ, รายละเอียด, วิทยากร, สถานที่)">
                 </div>
 
                 <!-- Filters -->
-                <div class="filters">
+                <div class="filters no-print">
                     <select id="filterCategory">
                         <option value="">ทุกประเภท</option>
-                        <option value="training">อบรม</option>
-                        <option value="seminar">สัมมนา</option>
-                        <option value="selfstudy">ศึกษาด้วยตนเอง</option>
-                        <option value="research">วิจัย</option>
-                        <option value="plc">ชุมชนการเรียนรู้ทางวิชาชีพ (PLC)</option>
-                        <option value="other">อื่นๆ</option>
+                    </select>
+
+                    <select id="filterFormat">
+                        <option value="">ทุกรูปแบบ</option>
+                        <option value="onsite">Onsite</option>
+                        <option value="online">Online</option>
+                        <option value="hybrid">Hybrid</option>
                     </select>
 
                     <input type="month" id="filterMonth" placeholder="เดือน">
@@ -740,7 +931,6 @@
                         <option value="hours-desc">ชั่วโมง (มาก → น้อย)</option>
                         <option value="hours-asc">ชั่วโมง (น้อย → มาก)</option>
                         <option value="title-asc">หัวข้อ (ก-ฮ)</option>
-                        <option value="title-desc">หัวข้อ (ฮ-ก)</option>
                     </select>
 
                     <button class="btn btn-secondary btn-small" onclick="clearFilters()">
@@ -760,7 +950,7 @@
 
     <!-- Edit Modal -->
     <div id="editModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content large">
             <div class="modal-header">
                 <h2><i class="fas fa-edit"></i> แก้ไขบันทึก</h2>
                 <button class="close" onclick="closeEditModal()">&times;</button>
@@ -769,9 +959,16 @@
                 <form id="editForm">
                     <input type="hidden" id="editId">
 
-                    <div class="form-group">
-                        <label for="editDate">วันที่</label>
-                        <input type="date" id="editDate" required>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editDate">วันที่</label>
+                            <input type="date" id="editDate" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="editHours">ชั่วโมง</label>
+                            <input type="number" id="editHours" min="0" step="0.5" required>
+                        </div>
                     </div>
 
                     <div class="form-group">
@@ -779,26 +976,57 @@
                         <input type="text" id="editTitle" required>
                     </div>
 
-                    <div class="form-group">
-                        <label for="editCategory">ประเภทกิจกรรม</label>
-                        <select id="editCategory" required>
-                            <option value="training">อบรม</option>
-                            <option value="seminar">สัมมนา</option>
-                            <option value="selfstudy">ศึกษาด้วยตนเอง</option>
-                            <option value="research">วิจัย</option>
-                            <option value="plc">ชุมชนการเรียนรู้ทางวิชาชีพ (PLC)</option>
-                            <option value="other">อื่นๆ</option>
-                        </select>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editCategory">ประเภท</label>
+                            <select id="editCategory" required></select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="editFormat">รูปแบบ</label>
+                            <select id="editFormat" required>
+                                <option value="onsite">Onsite</option>
+                                <option value="online">Online</option>
+                                <option value="hybrid">Hybrid</option>
+                            </select>
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="editHours">ระยะเวลา (ชั่วโมง)</label>
-                        <input type="number" id="editHours" min="0" step="0.5" required>
+                        <label for="editVenue">สถานที่</label>
+                        <input type="text" id="editVenue">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="editOrganizer">ผู้จัด</label>
+                            <input type="text" id="editOrganizer">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="editInstructor">วิทยากร</label>
+                            <input type="text" id="editInstructor">
+                        </div>
                     </div>
 
                     <div class="form-group">
-                        <label for="editDescription">รายละเอียด/บันทึกการเรียนรู้</label>
+                        <label for="editCompetency">สมรรถนะที่พัฒนา</label>
+                        <input type="text" id="editCompetency">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editDescription">รายละเอียด</label>
                         <textarea id="editDescription" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editApplication">การนำไปใช้</label>
+                        <textarea id="editApplication"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editCertificate">เกียรติบัตร</label>
+                        <input type="text" id="editCertificate">
                     </div>
                 </form>
             </div>
@@ -807,6 +1035,50 @@
                 <button class="btn btn-primary" onclick="saveEdit()">
                     <i class="fas fa-save"></i> บันทึกการแก้ไข
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Detail Modal -->
+    <div id="viewModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2><i class="fas fa-eye"></i> รายละเอียดกิจกรรม</h2>
+                <button class="close" onclick="closeViewModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="viewModalContent">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeViewModal()">ปิด</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Management Modal -->
+    <div id="categoryModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-tags"></i> จัดการประเภทกิจกรรม</h2>
+                <button class="close" onclick="closeCategoryModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>เพิ่มประเภทใหม่</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="newCategoryName" placeholder="ชื่อประเภท" style="flex: 1;">
+                        <input type="color" id="newCategoryColor" value="#667eea" style="width: 60px;">
+                        <button class="btn btn-primary" onclick="addCategory()" style="width: auto; padding: 10px 20px;">
+                            <i class="fas fa-plus"></i> เพิ่ม
+                        </button>
+                    </div>
+                </div>
+
+                <hr style="margin: 20px 0;">
+
+                <ul class="category-list" id="categoryList"></ul>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeCategoryModal()">ปิด</button>
             </div>
         </div>
     </div>
@@ -826,14 +1098,14 @@
 
                 <div class="form-group">
                     <label for="goalHours">เป้าหมายชั่วโมงพัฒนาตนเอง</label>
-                    <input type="number" id="goalHours" min="1" step="1" placeholder="เช่น 30" value="30">
+                    <input type="number" id="goalHours" min="1" step="1" placeholder="30" value="30">
                     <small style="color: #666;">ครูควรมีชั่วโมงพัฒนาตนเองอย่างน้อย 20-30 ชั่วโมงต่อปี</small>
                 </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeGoalModal()">ยกเลิก</button>
                 <button class="btn btn-primary" onclick="saveGoal()">
-                    <i class="fas fa-save"></i> บันทึกเป้าหมาย
+                    <i class="fas fa-save"></i> บันทึก
                 </button>
             </div>
         </div>
@@ -862,647 +1134,6 @@
         </div>
     </div>
 
-    <script>
-        // Initialize
-        let logs = JSON.parse(localStorage.getItem('teacherLogs')) || [];
-        let yearlyGoal = JSON.parse(localStorage.getItem('yearlyGoal')) || { year: new Date().getFullYear() + 543, hours: 30 };
-
-        // Set today's date as default
-        document.getElementById('activityDate').valueAsDate = new Date();
-
-        // Category labels
-        const categoryLabels = {
-            training: 'อบรม',
-            seminar: 'สัมมนา',
-            selfstudy: 'ศึกษาด้วยตนเอง',
-            research: 'วิจัย',
-            plc: 'ชุมชนการเรียนรู้ทางวิชาชีพ (PLC)',
-            other: 'อื่นๆ'
-        };
-
-        // Form submission
-        document.getElementById('logForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-
-            const log = {
-                id: Date.now(),
-                date: document.getElementById('activityDate').value,
-                title: document.getElementById('activityTitle').value,
-                category: document.getElementById('activityCategory').value,
-                hours: parseFloat(document.getElementById('activityHours').value),
-                description: document.getElementById('activityDescription').value,
-                createdAt: new Date().toISOString()
-            };
-
-            logs.push(log);
-            saveLogs();
-            this.reset();
-            document.getElementById('activityDate').valueAsDate = new Date();
-
-            renderLogs();
-            updateStats();
-
-            showNotification('บันทึกสำเร็จ!', 'success');
-        });
-
-        // Filter and search listeners
-        document.getElementById('filterCategory').addEventListener('change', renderLogs);
-        document.getElementById('filterMonth').addEventListener('change', renderLogs);
-        document.getElementById('sortBy').addEventListener('change', renderLogs);
-        document.getElementById('searchInput').addEventListener('input', renderLogs);
-
-        // Save logs to localStorage
-        function saveLogs() {
-            localStorage.setItem('teacherLogs', JSON.stringify(logs));
-            autoBackup();
-        }
-
-        // Auto backup
-        function autoBackup() {
-            const backup = {
-                logs: logs,
-                goal: yearlyGoal,
-                timestamp: new Date().toISOString()
-            };
-            localStorage.setItem('autoBackup', JSON.stringify(backup));
-        }
-
-        // Render logs
-        function renderLogs() {
-            const filterCategory = document.getElementById('filterCategory').value;
-            const filterMonth = document.getElementById('filterMonth').value;
-            const sortBy = document.getElementById('sortBy').value;
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-
-            let filteredLogs = logs;
-
-            // Search
-            if (searchTerm) {
-                filteredLogs = filteredLogs.filter(log =>
-                    log.title.toLowerCase().includes(searchTerm) ||
-                    log.description.toLowerCase().includes(searchTerm)
-                );
-            }
-
-            // Filter by category
-            if (filterCategory) {
-                filteredLogs = filteredLogs.filter(log => log.category === filterCategory);
-            }
-
-            // Filter by month
-            if (filterMonth) {
-                filteredLogs = filteredLogs.filter(log => {
-                    const logMonth = log.date.substring(0, 7);
-                    return logMonth === filterMonth;
-                });
-            }
-
-            // Sort
-            filteredLogs.sort((a, b) => {
-                switch (sortBy) {
-                    case 'date-desc':
-                        return new Date(b.date) - new Date(a.date);
-                    case 'date-asc':
-                        return new Date(a.date) - new Date(b.date);
-                    case 'hours-desc':
-                        return b.hours - a.hours;
-                    case 'hours-asc':
-                        return a.hours - b.hours;
-                    case 'title-asc':
-                        return a.title.localeCompare(b.title, 'th');
-                    case 'title-desc':
-                        return b.title.localeCompare(a.title, 'th');
-                    default:
-                        return new Date(b.date) - new Date(a.date);
-                }
-            });
-
-            const logsList = document.getElementById('logsList');
-
-            if (filteredLogs.length === 0) {
-                logsList.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-clipboard-list"></i>
-                        <p>ไม่พบบันทึกตามเงื่อนไขที่เลือก</p>
-                    </div>
-                `;
-                return;
-            }
-
-            logsList.innerHTML = filteredLogs.map(log => `
-                <div class="log-card">
-                    <div class="log-header">
-                        <div class="log-title">
-                            <span class="log-category category-${log.category}">
-                                ${categoryLabels[log.category]}
-                            </span>
-                            <h3>${log.title}</h3>
-                            <div class="log-meta">
-                                <span><i class="fas fa-calendar"></i> ${formatDateThai(log.date)}</span>
-                                <span><i class="fas fa-clock"></i> ${log.hours} ชั่วโมง</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="log-description">
-                        ${log.description}
-                    </div>
-                    <div class="log-actions">
-                        <button class="btn btn-edit btn-small" onclick="editLog(${log.id})">
-                            <i class="fas fa-edit"></i> แก้ไข
-                        </button>
-                        <button class="btn btn-delete btn-small" onclick="deleteLog(${log.id})">
-                            <i class="fas fa-trash"></i> ลบ
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        // Update statistics
-        function updateStats() {
-            const totalActivities = logs.length;
-            const totalHours = logs.reduce((sum, log) => sum + log.hours, 0);
-
-            const currentMonth = new Date().toISOString().substring(0, 7);
-            const thisMonth = logs.filter(log => log.date.startsWith(currentMonth)).length;
-
-            document.getElementById('totalActivities').textContent = totalActivities;
-            document.getElementById('totalHours').textContent = totalHours.toFixed(1);
-            document.getElementById('thisMonth').textContent = thisMonth;
-
-            // Update goal progress
-            const currentYear = new Date().getFullYear() + 543;
-            if (yearlyGoal.year === currentYear) {
-                const yearStart = (currentYear - 543) + '-01-01';
-                const yearEnd = (currentYear - 543) + '-12-31';
-                const yearlyHours = logs
-                    .filter(log => log.date >= yearStart && log.date <= yearEnd)
-                    .reduce((sum, log) => sum + log.hours, 0);
-
-                const progress = Math.min(100, (yearlyHours / yearlyGoal.hours) * 100);
-                document.getElementById('goalProgress').textContent = progress.toFixed(0) + '%';
-                document.getElementById('goalProgressBar').style.width = progress + '%';
-                document.getElementById('goalText').textContent = `${yearlyHours.toFixed(1)} / ${yearlyGoal.hours} ชม.`;
-            }
-        }
-
-        // Edit log
-        function editLog(id) {
-            const log = logs.find(l => l.id === id);
-            if (!log) return;
-
-            document.getElementById('editId').value = log.id;
-            document.getElementById('editDate').value = log.date;
-            document.getElementById('editTitle').value = log.title;
-            document.getElementById('editCategory').value = log.category;
-            document.getElementById('editHours').value = log.hours;
-            document.getElementById('editDescription').value = log.description;
-
-            document.getElementById('editModal').style.display = 'block';
-        }
-
-        // Save edit
-        function saveEdit() {
-            const id = parseInt(document.getElementById('editId').value);
-            const logIndex = logs.findIndex(l => l.id === id);
-
-            if (logIndex === -1) return;
-
-            logs[logIndex] = {
-                ...logs[logIndex],
-                date: document.getElementById('editDate').value,
-                title: document.getElementById('editTitle').value,
-                category: document.getElementById('editCategory').value,
-                hours: parseFloat(document.getElementById('editHours').value),
-                description: document.getElementById('editDescription').value
-            };
-
-            saveLogs();
-            renderLogs();
-            updateStats();
-            closeEditModal();
-
-            showNotification('แก้ไขสำเร็จ!', 'success');
-        }
-
-        // Close edit modal
-        function closeEditModal() {
-            document.getElementById('editModal').style.display = 'none';
-        }
-
-        // Delete log
-        function deleteLog(id) {
-            if (!confirm('คุณแน่ใจหรือไม่ที่จะลบบันทึกนี้?')) return;
-
-            logs = logs.filter(log => log.id !== id);
-            saveLogs();
-            renderLogs();
-            updateStats();
-
-            showNotification('ลบสำเร็จ!', 'success');
-        }
-
-        // Clear filters
-        function clearFilters() {
-            document.getElementById('filterCategory').value = '';
-            document.getElementById('filterMonth').value = '';
-            document.getElementById('searchInput').value = '';
-            document.getElementById('sortBy').value = 'date-desc';
-            renderLogs();
-        }
-
-        // Goal management
-        function openGoalModal() {
-            document.getElementById('goalYear').value = yearlyGoal.year;
-            document.getElementById('goalHours').value = yearlyGoal.hours;
-            document.getElementById('goalModal').style.display = 'block';
-        }
-
-        function closeGoalModal() {
-            document.getElementById('goalModal').style.display = 'none';
-        }
-
-        function saveGoal() {
-            yearlyGoal = {
-                year: parseInt(document.getElementById('goalYear').value),
-                hours: parseInt(document.getElementById('goalHours').value)
-            };
-            localStorage.setItem('yearlyGoal', JSON.stringify(yearlyGoal));
-            updateStats();
-            closeGoalModal();
-            showNotification('บันทึกเป้าหมายสำเร็จ!', 'success');
-        }
-
-        // Export to JSON
-        function exportToJSON() {
-            if (logs.length === 0) {
-                alert('ไม่มีข้อมูลให้ส่งออก');
-                return;
-            }
-
-            const data = {
-                logs: logs,
-                goal: yearlyGoal,
-                exportDate: new Date().toISOString(),
-                version: '1.0'
-            };
-
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-
-            link.setAttribute('href', url);
-            link.setAttribute('download', `teacher-logs-${new Date().toISOString().split('T')[0]}.json`);
-            link.style.visibility = 'hidden';
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            showNotification('ส่งออกสำเร็จ!', 'success');
-        }
-
-        // Import from JSON
-        function importFromJSON(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const data = JSON.parse(e.target.result);
-
-                    if (!data.logs || !Array.isArray(data.logs)) {
-                        throw new Error('Invalid data format');
-                    }
-
-                    if (logs.length > 0) {
-                        if (!confirm('การนำเข้าจะเพิ่มข้อมูลเข้ากับข้อมูลปัจจุบัน ต้องการดำเนินการต่อหรือไม่?')) {
-                            return;
-                        }
-                    }
-
-                    // Merge logs (avoid duplicates by checking ID)
-                    const existingIds = new Set(logs.map(log => log.id));
-                    const newLogs = data.logs.filter(log => !existingIds.has(log.id));
-                    logs = [...logs, ...newLogs];
-
-                    if (data.goal) {
-                        yearlyGoal = data.goal;
-                        localStorage.setItem('yearlyGoal', JSON.stringify(yearlyGoal));
-                    }
-
-                    saveLogs();
-                    renderLogs();
-                    updateStats();
-
-                    showNotification(`นำเข้าสำเร็จ! เพิ่มข้อมูล ${newLogs.length} รายการ`, 'success');
-                } catch (error) {
-                    alert('ไม่สามารถนำเข้าข้อมูลได้ กรุณาตรวจสอบไฟล์');
-                    console.error(error);
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        }
-
-        // Backup data
-        function backupData() {
-            const backup = {
-                logs: logs,
-                goal: yearlyGoal,
-                backupDate: new Date().toISOString(),
-                version: '1.0'
-            };
-
-            const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-
-            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-            link.setAttribute('href', url);
-            link.setAttribute('download', `backup-${timestamp}.json`);
-            link.style.visibility = 'hidden';
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            showNotification('สำรองข้อมูลสำเร็จ!', 'success');
-        }
-
-        // Restore data
-        function restoreData(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            if (!confirm('การกู้คืนจะแทนที่ข้อมูลปัจจุบันทั้งหมด คุณแน่ใจหรือไม่?')) {
-                event.target.value = '';
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const backup = JSON.parse(e.target.result);
-
-                    if (!backup.logs || !Array.isArray(backup.logs)) {
-                        throw new Error('Invalid backup format');
-                    }
-
-                    logs = backup.logs;
-                    if (backup.goal) {
-                        yearlyGoal = backup.goal;
-                        localStorage.setItem('yearlyGoal', JSON.stringify(yearlyGoal));
-                    }
-
-                    saveLogs();
-                    renderLogs();
-                    updateStats();
-
-                    showNotification('กู้คืนข้อมูลสำเร็จ!', 'success');
-                } catch (error) {
-                    alert('ไม่สามารถกู้คืนข้อมูลได้ กรุณาตรวจสอบไฟล์');
-                    console.error(error);
-                }
-            };
-            reader.readAsText(file);
-            event.target.value = '';
-        }
-
-        // Export to CSV
-        function exportToCSV() {
-            if (logs.length === 0) {
-                alert('ไม่มีข้อมูลให้ส่งออก');
-                return;
-            }
-
-            let csv = '\uFEFF';
-            csv += 'วันที่,หัวข้อ,ประเภท,ชั่วโมง,รายละเอียด\n';
-
-            logs.forEach(log => {
-                csv += `"${formatDateThai(log.date)}","${log.title}","${categoryLabels[log.category]}","${log.hours}","${log.description.replace(/"/g, '""')}"\n`;
-            });
-
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-
-            link.setAttribute('href', url);
-            link.setAttribute('download', `teacher-logs-${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            showNotification('ส่งออกสำเร็จ!', 'success');
-        }
-
-        // Chart Modal
-        let categoryChart = null;
-        let monthlyChart = null;
-
-        function openChartModal() {
-            if (logs.length === 0) {
-                alert('ไม่มีข้อมูลสำหรับแสดงกราฟ');
-                return;
-            }
-
-            document.getElementById('chartModal').style.display = 'block';
-
-            setTimeout(() => {
-                renderCharts();
-            }, 100);
-        }
-
-        function closeChartModal() {
-            document.getElementById('chartModal').style.display = 'none';
-            if (categoryChart) categoryChart.destroy();
-            if (monthlyChart) monthlyChart.destroy();
-        }
-
-        function renderCharts() {
-            // Category Chart
-            const categoryData = {};
-            logs.forEach(log => {
-                categoryData[log.category] = (categoryData[log.category] || 0) + 1;
-            });
-
-            const categoryCtx = document.getElementById('categoryChart').getContext('2d');
-            if (categoryChart) categoryChart.destroy();
-
-            categoryChart = new Chart(categoryCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: Object.keys(categoryData).map(key => categoryLabels[key]),
-                    datasets: [{
-                        data: Object.values(categoryData),
-                        backgroundColor: [
-                            '#667eea',
-                            '#764ba2',
-                            '#f093fb',
-                            '#f5576c',
-                            '#4facfe',
-                            '#00f2fe'
-                        ]
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    plugins: {
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                font: {
-                                    family: 'Sarabun',
-                                    size: 14
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Monthly Chart
-            const monthlyData = {};
-            logs.forEach(log => {
-                const month = log.date.substring(0, 7);
-                monthlyData[month] = (monthlyData[month] || 0) + log.hours;
-            });
-
-            const sortedMonths = Object.keys(monthlyData).sort();
-            const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-            if (monthlyChart) monthlyChart.destroy();
-
-            monthlyChart = new Chart(monthlyCtx, {
-                type: 'bar',
-                data: {
-                    labels: sortedMonths.map(m => {
-                        const [year, month] = m.split('-');
-                        return `${parseInt(month)}/${parseInt(year) + 543}`;
-                    }),
-                    datasets: [{
-                        label: 'ชั่วโมง',
-                        data: sortedMonths.map(m => monthlyData[m]),
-                        backgroundColor: 'rgba(102, 126, 234, 0.6)',
-                        borderColor: 'rgba(102, 126, 234, 1)',
-                        borderWidth: 2
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: true,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: {
-                                font: {
-                                    family: 'Sarabun',
-                                    size: 12
-                                }
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                font: {
-                                    family: 'Sarabun',
-                                    size: 12
-                                }
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            labels: {
-                                font: {
-                                    family: 'Sarabun',
-                                    size: 14
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        // Format date to Thai
-        function formatDateThai(dateString) {
-            const date = new Date(dateString);
-            const thaiMonths = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.',
-                              'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
-
-            const day = date.getDate();
-            const month = thaiMonths[date.getMonth()];
-            const year = date.getFullYear() + 543;
-
-            return `${day} ${month} ${year}`;
-        }
-
-        // Show notification
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: ${type === 'success' ? '#4caf50' : '#f44336'};
-                color: white;
-                padding: 15px 25px;
-                border-radius: 10px;
-                box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-                z-index: 10000;
-                animation: slideIn 0.3s ease;
-                font-family: 'Sarabun', sans-serif;
-            `;
-            notification.textContent = message;
-
-            document.body.appendChild(notification);
-
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => notification.remove(), 300);
-            }, 3000);
-        }
-
-        // Close modal when clicking outside
-        window.onclick = function(event) {
-            if (event.target.classList.contains('modal')) {
-                event.target.style.display = 'none';
-            }
-        };
-
-        // Add animation styles
-        const style = document.createElement('style');
-        style.textContent = `
-            @keyframes slideIn {
-                from {
-                    transform: translateX(400px);
-                    opacity: 0;
-                }
-                to {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-            }
-
-            @keyframes slideOut {
-                from {
-                    transform: translateX(0);
-                    opacity: 1;
-                }
-                to {
-                    transform: translateX(400px);
-                    opacity: 0;
-                }
-            }
-        `;
-        document.head.appendChild(style);
-
-        // Initial render
-        renderLogs();
-        updateStats();
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
