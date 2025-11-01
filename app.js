@@ -598,13 +598,17 @@ function exportToJSON() {
         return;
     }
 
+    const teacherProfile = JSON.parse(localStorage.getItem('teacherProfile')) || {};
+
     const data = {
         logs: logs,
         categories: categories,
         goal: yearlyGoal,
         teacherInfo: teacherInfo,
+        teacherProfile: teacherProfile,
+        googleSyncSettings: googleSyncSettings,
         exportDate: new Date().toISOString(),
-        version: '2.0'
+        version: '2.1'
     };
 
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -665,6 +669,15 @@ function importFromJSON(event) {
                 localStorage.setItem('teacherInfo', JSON.stringify(teacherInfo));
             }
 
+            if (data.teacherProfile) {
+                localStorage.setItem('teacherProfile', JSON.stringify(data.teacherProfile));
+            }
+
+            if (data.googleSyncSettings) {
+                googleSyncSettings = data.googleSyncSettings;
+                localStorage.setItem('googleSyncSettings', JSON.stringify(googleSyncSettings));
+            }
+
             saveLogs();
             initCategoryDropdowns();
             renderLogs();
@@ -682,13 +695,17 @@ function importFromJSON(event) {
 
 // Backup data
 function backupData() {
+    const teacherProfile = JSON.parse(localStorage.getItem('teacherProfile')) || {};
+
     const backup = {
         logs: logs,
         categories: categories,
         goal: yearlyGoal,
         teacherInfo: teacherInfo,
+        teacherProfile: teacherProfile,
+        googleSyncSettings: googleSyncSettings,
         backupDate: new Date().toISOString(),
-        version: '2.0'
+        version: '2.1'
     };
 
     const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
@@ -738,6 +755,13 @@ function restoreData(event) {
             if (backup.teacherInfo) {
                 teacherInfo = backup.teacherInfo;
                 localStorage.setItem('teacherInfo', JSON.stringify(teacherInfo));
+            }
+            if (backup.teacherProfile) {
+                localStorage.setItem('teacherProfile', JSON.stringify(backup.teacherProfile));
+            }
+            if (backup.googleSyncSettings) {
+                googleSyncSettings = backup.googleSyncSettings;
+                localStorage.setItem('googleSyncSettings', JSON.stringify(googleSyncSettings));
             }
 
             saveLogs();
