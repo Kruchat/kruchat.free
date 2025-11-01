@@ -614,7 +614,7 @@ function viewLog(id) {
                                     <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${file.name}">${file.name}</div>
                                     <div style="font-size: 0.85rem; color: #999;">${formatFileSize(file.size)}</div>
                                 </div>
-                                <button class="btn btn-small btn-view" onclick="downloadCertificateFromLog(${log.id}, ${idx})" style="margin: 0;">
+                                <button type="button" class="btn btn-small btn-view btn-download-cert" data-log-id="${log.id}" data-file-index="${idx}" style="margin: 0;">
                                     <i class="fas fa-download"></i> ดาวน์โหลด
                                 </button>
                             </div>
@@ -628,6 +628,15 @@ function viewLog(id) {
 
     document.getElementById('viewModalContent').innerHTML = content;
     document.getElementById('viewModal').style.display = 'block';
+
+    // Add event listeners for certificate download buttons
+    document.querySelectorAll('.btn-download-cert').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const logId = parseInt(this.getAttribute('data-log-id'));
+            const fileIndex = parseInt(this.getAttribute('data-file-index'));
+            downloadCertificateFromLog(logId, fileIndex);
+        });
+    });
 }
 
 function closeViewModal() {
@@ -1370,6 +1379,8 @@ function renderCertificateFiles(elementId, filesArray, mode) {
         const sizeStr = formatFileSize(file.size);
         const isUploaded = file.uploadedToGDrive;
 
+        const escapedUrl = file.gdriveUrl ? file.gdriveUrl.replace(/'/g, '&apos;') : '';
+
         return `
             <div class="file-preview-item" data-file-id="${file.id}">
                 <div class="file-preview-icon ${className}">
@@ -1384,21 +1395,48 @@ function renderCertificateFiles(elementId, filesArray, mode) {
                 </div>
                 <div class="file-preview-actions">
                     ${file.gdriveUrl ? `
-                        <button class="btn-file-action btn-file-download" onclick="window.open('${file.gdriveUrl}', '_blank')" title="ดาวน์โหลด">
+                        <button type="button" class="btn-file-action btn-file-download" data-url="${escapedUrl}" title="ดาวน์โหลด">
                             <i class="fas fa-download"></i>
                         </button>
                     ` : `
-                        <button class="btn-file-action btn-file-download" onclick="downloadCertificateFile(${index}, '${mode}')" title="ดาวน์โหลด">
+                        <button type="button" class="btn-file-action btn-file-download" data-index="${index}" data-mode="${mode}" title="ดาวน์โหลด">
                             <i class="fas fa-download"></i>
                         </button>
                     `}
-                    <button class="btn-file-action btn-file-delete" onclick="deleteCertificateFile(${index}, '${mode}')" title="ลบ">
+                    <button type="button" class="btn-file-action btn-file-delete" data-index="${index}" data-mode="${mode}" title="ลบ">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
             </div>
         `;
     }).join('');
+
+    // Add event listeners for file action buttons
+    container.querySelectorAll('.btn-file-download').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const url = this.getAttribute('data-url');
+            const index = this.getAttribute('data-index');
+            const mode = this.getAttribute('data-mode');
+
+            if (url) {
+                // Open Google Drive URL
+                window.open(url, '_blank');
+            } else if (index !== null && mode) {
+                // Download from local data
+                downloadCertificateFile(parseInt(index), mode);
+            }
+        });
+    });
+
+    container.querySelectorAll('.btn-file-delete').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const index = parseInt(this.getAttribute('data-index'));
+            const mode = this.getAttribute('data-mode');
+            if (index >= 0 && mode) {
+                deleteCertificateFile(index, mode);
+            }
+        });
+    });
 }
 
 // Get file icon based on file extension
