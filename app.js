@@ -185,7 +185,7 @@ document.getElementById('logForm').addEventListener('submit', function(e) {
         competencies: competencies,
         description: document.getElementById('activityDescription').value,
         application: document.getElementById('activityApplication').value,
-        certificate: document.getElementById('activityCertificate').value,
+        certificateFiles: [...certificateFiles], // Store files array
         createdAt: new Date().toISOString()
     };
 
@@ -193,6 +193,10 @@ document.getElementById('logForm').addEventListener('submit', function(e) {
     saveLogs();
     this.reset();
     document.getElementById('activityDate').valueAsDate = new Date();
+
+    // Clear certificate files
+    certificateFiles = [];
+    renderCertificateFiles('certificateFilesList', certificateFiles, 'add');
 
     renderLogs();
     updateStats();
@@ -375,9 +379,25 @@ function renderLogs() {
                     </div>
                     ` : ''}
 
-                    ${log.certificate ? `
-                    <div style="margin: 10px 0; padding: 10px; background: #fff3cd; border-radius: 5px;">
-                        <strong><i class="fas fa-certificate"></i> เกียรติบัตร:</strong> ${log.certificate}
+                    ${log.certificateFiles && log.certificateFiles.length > 0 ? `
+                    <div style="margin: 15px 0;">
+                        <strong style="color: #667eea;"><i class="fas fa-certificate"></i> เกียรติบัตร/หลักฐาน (${log.certificateFiles.length} ไฟล์):</strong>
+                        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; margin-top: 10px;">
+                            ${log.certificateFiles.map((file, idx) => {
+                                const { icon, className } = getFileIcon(file.name);
+                                return `
+                                    <div style="display: flex; align-items: center; gap: 8px; padding: 8px; background: white; border: 1px solid #e0e0e0; border-radius: 8px;">
+                                        <div style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 6px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-size: 0.9rem;">
+                                            <i class="${icon}"></i>
+                                        </div>
+                                        <div style="flex: 1; min-width: 0;">
+                                            <div style="font-size: 0.85rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${file.name}">${file.name}</div>
+                                            <div style="font-size: 0.75rem; color: #999;">${formatFileSize(file.size)}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
                     </div>
                     ` : ''}
 
@@ -439,10 +459,28 @@ function viewLog(id) {
             </div>
             ` : ''}
 
-            ${log.certificate ? `
+            ${log.certificateFiles && log.certificateFiles.length > 0 ? `
             <div style="margin: 20px 0; padding: 15px; background: #fff3cd; border-radius: 8px;">
-                <strong><i class="fas fa-certificate"></i> เกียรติบัตร/หลักฐาน:</strong><br>
-                ${log.certificate}
+                <strong><i class="fas fa-certificate"></i> เกียรติบัตร/หลักฐาน (${log.certificateFiles.length} ไฟล์):</strong><br><br>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                    ${log.certificateFiles.map((file, idx) => {
+                        const { icon, className } = getFileIcon(file.name);
+                        return `
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 12px; background: white; border: 1px solid #e0e0e0; border-radius: 8px;">
+                                <div style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                    <i class="${icon}"></i>
+                                </div>
+                                <div style="flex: 1; min-width: 0;">
+                                    <div style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${file.name}">${file.name}</div>
+                                    <div style="font-size: 0.85rem; color: #999;">${formatFileSize(file.size)}</div>
+                                </div>
+                                <button class="btn btn-small btn-view" onclick="downloadCertificateFromLog(${log.id}, ${idx})" style="margin: 0;">
+                                    <i class="fas fa-download"></i> ดาวน์โหลด
+                                </button>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
             </div>
             ` : ''}
         </div>
@@ -454,6 +492,26 @@ function viewLog(id) {
 
 function closeViewModal() {
     document.getElementById('viewModal').style.display = 'none';
+}
+
+// Download certificate file from log
+function downloadCertificateFromLog(logId, fileIndex) {
+    const log = logs.find(l => l.id === logId);
+    if (!log || !log.certificateFiles || !log.certificateFiles[fileIndex]) return;
+
+    const file = log.certificateFiles[fileIndex];
+
+    // If file has Google Drive URL, open it
+    if (file.gdriveUrl) {
+        window.open(file.gdriveUrl, '_blank');
+        return;
+    }
+
+    // Otherwise download from base64
+    const link = document.createElement('a');
+    link.href = file.data;
+    link.download = file.name;
+    link.click();
 }
 
 // Update statistics
@@ -501,7 +559,10 @@ function editLog(id) {
     document.getElementById('editCompetency').value = (log.competencies || []).join(', ');
     document.getElementById('editDescription').value = log.description;
     document.getElementById('editApplication').value = log.application || '';
-    document.getElementById('editCertificate').value = log.certificate || '';
+
+    // Load existing certificate files
+    editCertificateFiles = log.certificateFiles ? [...log.certificateFiles] : [];
+    renderCertificateFiles('editCertificateFilesList', editCertificateFiles, 'edit');
 
     document.getElementById('editModal').style.display = 'block';
 }
@@ -531,7 +592,7 @@ function saveEdit() {
         competencies: competencies,
         description: document.getElementById('editDescription').value,
         application: document.getElementById('editApplication').value,
-        certificate: document.getElementById('editCertificate').value
+        certificateFiles: [...editCertificateFiles] // Update files
     };
 
     saveLogs();
@@ -1257,6 +1318,225 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+// ========== CERTIFICATE FILES MANAGEMENT ==========
+
+// Store certificate files temporarily
+let certificateFiles = [];
+let editCertificateFiles = [];
+
+// Handle certificate file selection
+function handleCertificateFiles(event, mode) {
+    const files = Array.from(event.target.files);
+    const targetArray = mode === 'edit' ? editCertificateFiles : certificateFiles;
+    const listElement = mode === 'edit' ? 'editCertificateFilesList' : 'certificateFilesList';
+
+    files.forEach(file => {
+        // Check file size (max 10MB per file)
+        if (file.size > 10 * 1024 * 1024) {
+            alert(`ไฟล์ "${file.name}" มีขนาดใหญ่เกิน 10MB กรุณาเลือกไฟล์ที่เล็กกว่า`);
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const fileData = {
+                id: Date.now() + Math.random(),
+                name: file.name,
+                size: file.size,
+                type: file.type,
+                data: e.target.result, // Base64
+                uploadedToGDrive: false,
+                gdriveId: null,
+                gdriveUrl: null
+            };
+
+            targetArray.push(fileData);
+            renderCertificateFiles(listElement, targetArray, mode);
+        };
+        reader.readAsDataURL(file);
+    });
+
+    // Clear input
+    event.target.value = '';
+}
+
+// Render certificate files list
+function renderCertificateFiles(elementId, filesArray, mode) {
+    const container = document.getElementById(elementId);
+    if (!container) return;
+
+    if (filesArray.length === 0) {
+        container.innerHTML = '';
+        return;
+    }
+
+    container.innerHTML = filesArray.map((file, index) => {
+        const { icon, className } = getFileIcon(file.name);
+        const sizeStr = formatFileSize(file.size);
+        const isUploaded = file.uploadedToGDrive;
+
+        return `
+            <div class="file-preview-item" data-file-id="${file.id}">
+                <div class="file-preview-icon ${className}">
+                    <i class="${icon}"></i>
+                </div>
+                <div class="file-preview-info">
+                    <div class="file-preview-name" title="${file.name}">${file.name}</div>
+                    <div class="file-preview-size">
+                        ${sizeStr}
+                        ${isUploaded ? '<span style="color: #4caf50; margin-left: 10px;"><i class="fas fa-check-circle"></i> อัพโหลดแล้ว</span>' : ''}
+                    </div>
+                </div>
+                <div class="file-preview-actions">
+                    ${file.gdriveUrl ? `
+                        <button class="btn-file-action btn-file-download" onclick="window.open('${file.gdriveUrl}', '_blank')" title="ดาวน์โหลด">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    ` : `
+                        <button class="btn-file-action btn-file-download" onclick="downloadCertificateFile(${index}, '${mode}')" title="ดาวน์โหลด">
+                            <i class="fas fa-download"></i>
+                        </button>
+                    `}
+                    <button class="btn-file-action btn-file-delete" onclick="deleteCertificateFile(${index}, '${mode}')" title="ลบ">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Get file icon based on file extension
+function getFileIcon(filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+
+    const iconMap = {
+        // Documents
+        'pdf': { icon: 'fas fa-file-pdf', className: 'pdf' },
+        'doc': { icon: 'fas fa-file-word', className: 'word' },
+        'docx': { icon: 'fas fa-file-word', className: 'word' },
+        'xls': { icon: 'fas fa-file-excel', className: 'excel' },
+        'xlsx': { icon: 'fas fa-file-excel', className: 'excel' },
+        'ppt': { icon: 'fas fa-file-powerpoint', className: 'word' },
+        'pptx': { icon: 'fas fa-file-powerpoint', className: 'word' },
+
+        // Images
+        'jpg': { icon: 'fas fa-file-image', className: 'image' },
+        'jpeg': { icon: 'fas fa-file-image', className: 'image' },
+        'png': { icon: 'fas fa-file-image', className: 'image' },
+        'gif': { icon: 'fas fa-file-image', className: 'image' },
+        'bmp': { icon: 'fas fa-file-image', className: 'image' },
+        'svg': { icon: 'fas fa-file-image', className: 'image' },
+
+        // Archives
+        'zip': { icon: 'fas fa-file-archive', className: 'default' },
+        'rar': { icon: 'fas fa-file-archive', className: 'default' },
+        '7z': { icon: 'fas fa-file-archive', className: 'default' },
+
+        // Text
+        'txt': { icon: 'fas fa-file-alt', className: 'default' },
+        'csv': { icon: 'fas fa-file-csv', className: 'excel' },
+    };
+
+    return iconMap[ext] || { icon: 'fas fa-file', className: 'default' };
+}
+
+// Format file size
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+}
+
+// Download certificate file
+function downloadCertificateFile(index, mode) {
+    const targetArray = mode === 'edit' ? editCertificateFiles : certificateFiles;
+    const file = targetArray[index];
+
+    if (!file) return;
+
+    // If file has Google Drive URL, open it
+    if (file.gdriveUrl) {
+        window.open(file.gdriveUrl, '_blank');
+        return;
+    }
+
+    // Otherwise download from base64
+    const link = document.createElement('a');
+    link.href = file.data;
+    link.download = file.name;
+    link.click();
+}
+
+// Delete certificate file
+function deleteCertificateFile(index, mode) {
+    if (!confirm('ต้องการลบไฟล์นี้หรือไม่?')) return;
+
+    const targetArray = mode === 'edit' ? editCertificateFiles : certificateFiles;
+    const listElement = mode === 'edit' ? 'editCertificateFilesList' : 'certificateFilesList';
+
+    targetArray.splice(index, 1);
+    renderCertificateFiles(listElement, targetArray, mode);
+
+    showNotification('ลบไฟล์สำเร็จ!', 'success');
+}
+
+// Upload files to Google Drive (will be called during Google sync)
+async function uploadCertificateFilesToDrive(files, logId) {
+    if (!googleSyncSettings.enabled || !googleSyncSettings.scriptUrl) {
+        return files; // Return as-is if Google sync not configured
+    }
+
+    const uploadedFiles = [];
+
+    for (const file of files) {
+        if (file.uploadedToGDrive && file.gdriveUrl) {
+            // Already uploaded
+            uploadedFiles.push(file);
+            continue;
+        }
+
+        try {
+            const payload = {
+                action: 'uploadFile',
+                folderId: googleSyncSettings.folderId,
+                fileName: file.name,
+                fileData: file.data,
+                logId: logId
+            };
+
+            const response = await fetch(googleSyncSettings.scriptUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                uploadedFiles.push({
+                    ...file,
+                    uploadedToGDrive: true,
+                    gdriveId: result.fileId,
+                    gdriveUrl: result.fileUrl
+                });
+            } else {
+                // If upload fails, keep original
+                uploadedFiles.push(file);
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            uploadedFiles.push(file);
+        }
+    }
+
+    return uploadedFiles;
+}
+
 // ========== PROFILE MANAGEMENT ==========
 
 function openProfileModal() {
@@ -1521,6 +1801,55 @@ function doPost(e) {
         success: true,
         logs: logs,
         message: 'Data downloaded successfully!'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (action === 'uploadFile') {
+      // Upload certificate file to Google Drive
+      const fileName = params.fileName || 'certificate.pdf';
+      const fileData = params.fileData; // Base64 data URL
+      const logId = params.logId || 'unknown';
+
+      if (!fileData) {
+        throw new Error('No file data provided');
+      }
+
+      // Extract mime type and base64 data
+      const matches = fileData.match(/^data:(.+);base64,(.+)$/);
+      if (!matches) {
+        throw new Error('Invalid file data format');
+      }
+
+      const mimeType = matches[1];
+      const base64Data = matches[2];
+
+      // Create blob from base64
+      const blob = Utilities.newBlob(
+        Utilities.base64Decode(base64Data),
+        mimeType,
+        fileName
+      );
+
+      // Get or create certificates folder
+      const folder = DriveApp.getFolderById(folderId);
+      let certFolder;
+      const certFolders = folder.getFoldersByName('Certificates');
+      if (certFolders.hasNext()) {
+        certFolder = certFolders.next();
+      } else {
+        certFolder = folder.createFolder('Certificates');
+      }
+
+      // Upload file
+      const file = certFolder.createFile(blob);
+      file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+
+      return ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        fileId: file.getId(),
+        fileUrl: file.getUrl(),
+        fileName: fileName,
+        message: 'File uploaded successfully!'
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
