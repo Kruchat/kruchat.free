@@ -363,7 +363,6 @@ function updateAutoSaveStatus() {
     }
 }
 
-// Save logs to localStorage
 // Save logs to localStorage and sync to Google Sheets
 function saveLogs() {
     localStorage.setItem('teacherLogs', JSON.stringify(logs));
