@@ -378,9 +378,13 @@
         <input type="text" id="custom-name" value="นางสาวชลธิดา เสรีรัตน์วิภาชัย">
     </div>
     <div class="underline-option">
-        <input type="checkbox" id="underline" checked>
-        <div class="checkbox-custom" onclick="document.getElementById('underline').click()"></div>
-        <label for="underline">แสดงเส้นสำหรับเซ็นต์ชื่อ</label>
+        <input type="checkbox" id="show-signature" checked>
+        <div class="checkbox-custom" onclick="document.getElementById('show-signature').click()"></div>
+        <label for="show-signature">แสดงพื้นที่ลายเซ็น</label>
+    </div>
+    <div style="text-align: center; margin: 15px 0;">
+        <button onclick="openSignatureModal()" style="background-color: #F4A261;">เพิ่มลายเซ็น</button>
+        <button onclick="clearSignature()" style="background-color: #E76F51; margin-left: 10px;">ล้างลายเซ็น</button>
     </div>
     <div class="color-option">
         <label>เลือกสีตัวอักษร:</label>
@@ -404,6 +408,19 @@
         (นายชัชวาลย์ ทะสิละ)
     </div>
 
+    <!-- Signature Modal -->
+    <div id="signature-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center;">
+        <div style="background: white; padding: 30px; border-radius: 12px; max-width: 600px; width: 90%; text-align: center;">
+            <h3 style="color: #2E3192; margin-bottom: 20px;">วาดลายเซ็นของคุณ</h3>
+            <canvas id="signature-canvas" width="500" height="200" style="border: 2px solid #2E3192; border-radius: 8px; cursor: crosshair; touch-action: none;"></canvas>
+            <div style="margin-top: 20px;">
+                <button onclick="clearSignatureCanvas()" style="background-color: #E76F51;">ล้าง</button>
+                <button onclick="saveSignature()" style="background-color: #2E3192;">บันทึก</button>
+                <button onclick="closeSignatureModal()" style="background-color: #999;">ยกเลิก</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         const { jsPDF } = window.jspdf;
@@ -415,6 +432,10 @@
         let stampColor = '#000080'; // ค่าเริ่มต้นเป็นน้ำเงินเข้ม
         let lineSpacing = 60; // ค่าเริ่มต้นของระยะห่างระหว่างบรรทัด
         let uploadTimeout = null; // ตัวแปรสำหรับเก็บ timeout
+        let signatureData = null; // เก็บข้อมูลลายเซ็น
+        let isDrawing = false; // สถานะการวาด
+        let lastX = 0;
+        let lastY = 0;
 
         const form = document.querySelector("form"),
               fileInput = document.querySelector(".file-input"),
@@ -553,7 +574,8 @@
 
         function showSummaryPopup() {
             const customName = document.getElementById('custom-name').value || "นางสาวชลธิดา เสรีรัตน์วิภาชัย";
-            const showUnderline = document.getElementById('underline').checked;
+            const showSignature = document.getElementById('show-signature').checked;
+            const hasSignature = signatureData !== null;
             const colorName = getColorName(stampColor);
             const positionText = getPositionText(stampPosition);
 
@@ -565,7 +587,8 @@
                         <p><strong>สีตัวอักษร:</strong> ${colorName}</p>
                         <p><strong>ระยะห่างระหว่างบรรทัด:</strong> ${lineSpacing} px</p>
                         <p><strong>ตำแหน่งตราประทับ:</strong> ${positionText}</p>
-                        <p><strong>แสดงเส้นสำหรับเซ็นต์ชื่อ:</strong> ${showUnderline ? 'ใช่' : 'ไม่'}</p>
+                        <p><strong>แสดงพื้นที่ลายเซ็น:</strong> ${showSignature ? 'ใช่' : 'ไม่'}</p>
+                        <p><strong>มีลายเซ็น:</strong> ${hasSignature ? 'มี' : 'ไม่มี'}</p>
                     </div>
                 `,
                 icon: 'info',
@@ -589,15 +612,15 @@
             }
         }
 
-        function renderImage(imgData) {
+        async function renderImage(imgData) {
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
             const img = new Image();
-            img.onload = function() {
+            img.onload = async function() {
                 canvas.width = img.width;
                 canvas.height = img.height;
                 ctx.drawImage(img, 0, 0);
-                drawStamp(canvas, null, canvas.width, canvas.height); // อัปเดตตราประทับทันที
+                await drawStamp(canvas, null, canvas.width, canvas.height); // อัปเดตตราประทับทันที
             };
             img.onerror = function() {
                 console.error("Error loading image");
@@ -624,7 +647,7 @@
                     viewport: viewport
                 };
                 await page.render(renderContext).promise;
-                drawStamp(canvas, null, canvas.width, canvas.height); // อัปเดตตราประทับทันที
+                await drawStamp(canvas, null, canvas.width, canvas.height); // อัปเดตตราประทับทันที
             } catch (error) {
                 console.error("Error rendering PDF:", error);
                 Swal.fire({
@@ -691,42 +714,108 @@
             }
         }
 
-        function drawStamp(canvas, callback, pageWidth, pageHeight) {
+        async function drawStamp(canvas, callback, pageWidth, pageHeight) {
             const ctx = canvas.getContext('2d');
             ctx.font = 'bold 32px Arial';
             ctx.fillStyle = stampColor; // ใช้สีจาก stampColor
 
             const customName = document.getElementById('custom-name').value || "นางสาวชลธิดา เสรีรัตน์วิภาชัย";
-            const showUnderline = document.getElementById('underline').checked;
+            const showSignature = document.getElementById('show-signature').checked;
 
-            let stampText = "สำเนาถูกต้อง\n";
-            if (showUnderline) {
-                stampText += "____________________\n";
+            // คำนวณวันที่ปัจจุบัน
+            const today = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            const thaiDate = today.toLocaleDateString('th-TH', options);
+
+            // สร้างข้อความตราประทับ
+            const lines = [];
+            lines.push({ type: 'text', content: 'สำเนาถูกต้อง', bold: true });
+
+            if (showSignature) {
+                if (signatureData) {
+                    lines.push({ type: 'signature', content: signatureData });
+                } else {
+                    lines.push({ type: 'text', content: '(วางลายเซ็นด้านบน)', italic: true, light: true });
+                }
             }
-            stampText += `(${customName})`;
 
-            const lines = stampText.split('\n');
-            const lineHeight = lineSpacing; // ใช้ค่า lineSpacing ที่ผู้ใช้กำหนด
+            lines.push({ type: 'text', content: `(${customName})`, bold: false });
+            lines.push({ type: 'text', content: `วันที่ ${thaiDate}`, italic: true });
 
+            const lineHeight = lineSpacing;
+
+            // คำนวณความกว้างสูงสุดของข้อความ
+            ctx.font = 'bold 32px Arial';
+            const textWidths = lines
+                .filter(line => line.type === 'text')
+                .map(line => ctx.measureText(line.content).width);
+            const maxTextWidth = Math.max(...textWidths);
+
+            // คำนวณตำแหน่ง x, y
             let x, y;
-            const maxWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
+            const totalHeight = lines.length * lineHeight;
 
             if (stampPosition === 'bottom-left') {
                 x = 40;
-                y = pageHeight - (lines.length * lineHeight) - 40;
+                y = pageHeight - totalHeight - 40;
             } else if (stampPosition === 'bottom-center') {
-                x = (pageWidth - maxWidth) / 2;
-                y = pageHeight - (lines.length * lineHeight) - 40;
+                x = (pageWidth - maxTextWidth) / 2;
+                y = pageHeight - totalHeight - 40;
             } else if (stampPosition === 'bottom-right') {
-                x = pageWidth - maxWidth - 40;
-                y = pageHeight - (lines.length * lineHeight) - 40;
+                x = pageWidth - maxTextWidth - 40;
+                y = pageHeight - totalHeight - 40;
             }
 
-            lines.forEach((line, index) => {
-                const lineWidth = ctx.measureText(line).width;
-                const offsetX = (maxWidth - lineWidth) / 2;
-                ctx.fillText(line, x + offsetX, y + (index * lineHeight));
-            });
+            // วาดแต่ละบรรทัด
+            for (let index = 0; index < lines.length; index++) {
+                const line = lines[index];
+                const currentY = y + (index * lineHeight);
+
+                if (line.type === 'text') {
+                    // ตั้งค่าฟอนต์
+                    let font = '';
+                    if (line.bold) {
+                        font += 'bold ';
+                    }
+                    if (line.italic) {
+                        font += 'italic ';
+                    }
+                    font += '32px Arial';
+                    ctx.font = font;
+
+                    // ตั้งค่าสี
+                    if (line.light) {
+                        ctx.fillStyle = stampColor + '80'; // เพิ่มความโปร่งใส
+                    } else {
+                        ctx.fillStyle = stampColor;
+                    }
+
+                    // คำนวณตำแหน่ง x ให้จัดกึ่งกลาง
+                    const lineWidth = ctx.measureText(line.content).width;
+                    const offsetX = (maxTextWidth - lineWidth) / 2;
+
+                    ctx.fillText(line.content, x + offsetX, currentY);
+
+                } else if (line.type === 'signature' && signatureData) {
+                    // วาดลายเซ็น
+                    await new Promise((resolve) => {
+                        const img = new Image();
+                        img.onload = function() {
+                            const sigHeight = lineHeight * 0.8; // ความสูงลายเซ็น
+                            const sigWidth = (img.width / img.height) * sigHeight;
+                            const sigX = x + (maxTextWidth - sigWidth) / 2;
+                            const sigY = currentY - sigHeight + 10;
+
+                            ctx.drawImage(img, sigX, sigY, sigWidth, sigHeight);
+                            resolve();
+                        };
+                        img.onerror = function() {
+                            resolve(); // แม้โหลดไม่ได้ก็ไม่ block
+                        };
+                        img.src = line.content;
+                    });
+                }
+            }
 
             if (callback) callback();
         }
@@ -739,6 +828,148 @@
             } else if (currentFileType === 'pdf' && pdfDoc) {
                 renderPDF(pdfDoc, 1);
             }
+        }
+
+        // ฟังก์ชันจัดการลายเซ็น
+        function openSignatureModal() {
+            const modal = document.getElementById('signature-modal');
+            modal.style.display = 'flex';
+
+            const canvas = document.getElementById('signature-canvas');
+            const ctx = canvas.getContext('2d');
+
+            // ล้าง canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // ตั้งค่าการวาด
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+
+            // Event listeners สำหรับ mouse
+            canvas.onmousedown = startDrawing;
+            canvas.onmousemove = draw;
+            canvas.onmouseup = stopDrawing;
+            canvas.onmouseleave = stopDrawing;
+
+            // Event listeners สำหรับ touch
+            canvas.ontouchstart = function(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+                isDrawing = true;
+                lastX = x;
+                lastY = y;
+            };
+
+            canvas.ontouchmove = function(e) {
+                e.preventDefault();
+                if (!isDrawing) return;
+                const touch = e.touches[0];
+                const rect = canvas.getBoundingClientRect();
+                const x = touch.clientX - rect.left;
+                const y = touch.clientY - rect.top;
+
+                ctx.beginPath();
+                ctx.moveTo(lastX, lastY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+
+                lastX = x;
+                lastY = y;
+            };
+
+            canvas.ontouchend = function(e) {
+                e.preventDefault();
+                isDrawing = false;
+            };
+        }
+
+        function startDrawing(e) {
+            isDrawing = true;
+            const rect = e.target.getBoundingClientRect();
+            lastX = e.clientX - rect.left;
+            lastY = e.clientY - rect.top;
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+
+            const canvas = document.getElementById('signature-canvas');
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            ctx.beginPath();
+            ctx.moveTo(lastX, lastY);
+            ctx.lineTo(x, y);
+            ctx.stroke();
+
+            lastX = x;
+            lastY = y;
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function clearSignatureCanvas() {
+            const canvas = document.getElementById('signature-canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function saveSignature() {
+            const canvas = document.getElementById('signature-canvas');
+            signatureData = canvas.toDataURL('image/png');
+            closeSignatureModal();
+
+            // อัปเดตตราประทับ
+            const mainCanvas = document.getElementById('canvas');
+            if (currentFileType === 'image' && imgData) {
+                renderImage(imgData);
+            } else if (currentFileType === 'pdf' && pdfDoc) {
+                renderPDF(pdfDoc, 1);
+            }
+
+            Swal.fire({
+                icon: 'success',
+                title: 'บันทึกลายเซ็นสำเร็จ',
+                text: 'ลายเซ็นของคุณได้ถูกบันทึกแล้ว',
+                confirmButtonText: 'ตกลง',
+                timer: 2000,
+                timerProgressBar: true
+            });
+        }
+
+        function closeSignatureModal() {
+            const modal = document.getElementById('signature-modal');
+            modal.style.display = 'none';
+        }
+
+        function clearSignature() {
+            signatureData = null;
+
+            // อัปเดตตราประทับ
+            const canvas = document.getElementById('canvas');
+            if (currentFileType === 'image' && imgData) {
+                renderImage(imgData);
+            } else if (currentFileType === 'pdf' && pdfDoc) {
+                renderPDF(pdfDoc, 1);
+            }
+
+            Swal.fire({
+                icon: 'info',
+                title: 'ล้างลายเซ็นแล้ว',
+                text: 'ลายเซ็นได้ถูกลบออกแล้ว',
+                confirmButtonText: 'ตกลง',
+                timer: 2000,
+                timerProgressBar: true
+            });
         }
 
         async function downloadFile() {
@@ -775,7 +1006,7 @@
                         };
                         await page.render(renderContext).promise;
 
-                        drawStamp(canvas, null, viewport.width, viewport.height);
+                        await drawStamp(canvas, null, viewport.width, viewport.height);
 
                         const pageWidth = originalViewport.width / 72 * 25.4;
                         const pageHeight = originalViewport.height / 72 * 25.4;
