@@ -74,19 +74,41 @@ function renderCategoryList() {
         <li class="category-item" style="border-left-color: ${cat.color}">
             <div class="category-item-content">
                 <div class="color-picker" style="background: ${cat.color}"
-                     onclick="changeCategoryColor('${cat.id}')"></div>
+                     data-category-id="${cat.id}"></div>
                 <span>${cat.name}</span>
             </div>
             <div style="display: flex; gap: 10px;">
-                <button class="btn btn-edit btn-small" onclick="editCategoryName('${cat.id}')">
+                <button type="button" class="btn btn-edit btn-small btn-edit-category" data-category-id="${cat.id}">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn btn-delete btn-small" onclick="deleteCategory('${cat.id}')">
+                <button type="button" class="btn btn-delete btn-small btn-delete-category" data-category-id="${cat.id}">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
         </li>
     `).join('');
+
+    // Add event listeners
+    list.querySelectorAll('.color-picker').forEach(picker => {
+        picker.addEventListener('click', function() {
+            const catId = this.getAttribute('data-category-id');
+            changeCategoryColor(catId);
+        });
+    });
+
+    list.querySelectorAll('.btn-edit-category').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const catId = this.getAttribute('data-category-id');
+            editCategoryName(catId);
+        });
+    });
+
+    list.querySelectorAll('.btn-delete-category').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const catId = this.getAttribute('data-category-id');
+            deleteCategory(catId);
+        });
+    });
 }
 
 function addCategory() {
@@ -542,13 +564,13 @@ function renderLogs() {
                     ` : ''}
 
                     <div class="log-actions">
-                        <button class="btn btn-view btn-small" onclick="viewLog(${log.id})">
+                        <button type="button" class="btn btn-view btn-small btn-view-log" data-log-id="${log.id}">
                             <i class="fas fa-eye"></i> ดูรายละเอียด
                         </button>
-                        <button class="btn btn-edit btn-small" onclick="editLog(${log.id})">
+                        <button type="button" class="btn btn-edit btn-small btn-edit-log" data-log-id="${log.id}">
                             <i class="fas fa-edit"></i> แก้ไข
                         </button>
-                        <button class="btn btn-delete btn-small" onclick="deleteLog(${log.id})">
+                        <button type="button" class="btn btn-delete btn-small btn-delete-log" data-log-id="${log.id}">
                             <i class="fas fa-trash"></i> ลบ
                         </button>
                     </div>
@@ -556,6 +578,31 @@ function renderLogs() {
             </div>
         `;
     }).join('');
+
+    // Add event listeners for log action buttons
+    const logsContainer = document.querySelector('.logs-list');
+    if (logsContainer) {
+        logsContainer.querySelectorAll('.btn-view-log').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const logId = parseInt(this.getAttribute('data-log-id'));
+                viewLog(logId);
+            });
+        });
+
+        logsContainer.querySelectorAll('.btn-edit-log').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const logId = parseInt(this.getAttribute('data-log-id'));
+                editLog(logId);
+            });
+        });
+
+        logsContainer.querySelectorAll('.btn-delete-log').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const logId = parseInt(this.getAttribute('data-log-id'));
+                deleteLog(logId);
+            });
+        });
+    }
 }
 
 // View log detail
