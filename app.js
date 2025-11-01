@@ -364,22 +364,10 @@ function updateAutoSaveStatus() {
 }
 
 // Save logs to localStorage
+// Save logs to localStorage and sync to Google Sheets
 function saveLogs() {
     localStorage.setItem('teacherLogs', JSON.stringify(logs));
-    autoBackup();
-    autoSaveToGoogle(); // Auto-save to Google
-}
-
-// Auto backup
-function autoBackup() {
-    const backup = {
-        logs: logs,
-        categories: categories,
-        goal: yearlyGoal,
-        teacherInfo: teacherInfo,
-        timestamp: new Date().toISOString()
-    };
-    localStorage.setItem('autoBackup', JSON.stringify(backup));
+    autoSaveToGoogle(); // Auto-save to Google Sheets (main backup)
 }
 
 // Render logs
@@ -805,7 +793,7 @@ function saveGoal() {
     showNotification('บันทึกเป้าหมายสำเร็จ!', 'success');
 }
 
-// Export to JSON
+// Export to JSON (for offline backup)
 function exportToJSON() {
     if (logs.length === 0) {
         alert('ไม่มีข้อมูลให้ส่งออก');
@@ -822,7 +810,7 @@ function exportToJSON() {
         teacherProfile: teacherProfile,
         googleSyncSettings: googleSyncSettings,
         exportDate: new Date().toISOString(),
-        version: '2.1'
+        version: '5.0'
     };
 
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -837,161 +825,16 @@ function exportToJSON() {
     link.click();
     document.body.removeChild(link);
 
-    showNotification('ส่งออกสำเร็จ!', 'success');
+    showNotification('ส่งออกสำเร็จ! (สำหรับ offline backup)', 'success');
 }
 
-// Import from JSON
-function importFromJSON(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const data = JSON.parse(e.target.result);
-
-            if (!data.logs || !Array.isArray(data.logs)) {
-                throw new Error('Invalid data format');
-            }
-
-            if (logs.length > 0) {
-                if (!confirm('การนำเข้าจะเพิ่มข้อมูลเข้ากับข้อมูลปัจจุบัน ต้องการดำเนินการต่อหรือไม่?')) {
-                    return;
-                }
-            }
-
-            // Merge logs (avoid duplicates)
-            const existingIds = new Set(logs.map(log => log.id));
-            const newLogs = data.logs.filter(log => !existingIds.has(log.id));
-            logs = [...logs, ...newLogs];
-
-            // Update categories if provided
-            if (data.categories && Array.isArray(data.categories)) {
-                const existingCatIds = new Set(categories.map(c => c.id));
-                const newCategories = data.categories.filter(c => !existingCatIds.has(c.id));
-                categories = [...categories, ...newCategories];
-                saveCategories();
-            }
-
-            if (data.goal) {
-                yearlyGoal = data.goal;
-                localStorage.setItem('yearlyGoal', JSON.stringify(yearlyGoal));
-            }
-
-            if (data.teacherInfo) {
-                teacherInfo = data.teacherInfo;
-                localStorage.setItem('teacherInfo', JSON.stringify(teacherInfo));
-            }
-
-            if (data.teacherProfile) {
-                localStorage.setItem('teacherProfile', JSON.stringify(data.teacherProfile));
-            }
-
-            if (data.googleSyncSettings) {
-                googleSyncSettings = data.googleSyncSettings;
-                localStorage.setItem('googleSyncSettings', JSON.stringify(googleSyncSettings));
-            }
-
-            saveLogs();
-            initCategoryDropdowns();
-            renderLogs();
-            updateStats();
-
-            showNotification(`นำเข้าสำเร็จ! เพิ่มข้อมูล ${newLogs.length} รายการ`, 'success');
-        } catch (error) {
-            alert('ไม่สามารถนำเข้าข้อมูลได้ กรุณาตรวจสอบไฟล์');
-            console.error(error);
-        }
-    };
-    reader.readAsText(file);
-    event.target.value = '';
-}
-
-// Backup data
-function backupData() {
-    const teacherProfile = JSON.parse(localStorage.getItem('teacherProfile')) || {};
-
-    const backup = {
-        logs: logs,
-        categories: categories,
-        goal: yearlyGoal,
-        teacherInfo: teacherInfo,
-        teacherProfile: teacherProfile,
-        googleSyncSettings: googleSyncSettings,
-        backupDate: new Date().toISOString(),
-        version: '2.1'
-    };
-
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-    link.setAttribute('href', url);
-    link.setAttribute('download', `backup-${timestamp}.json`);
-    link.style.visibility = 'hidden';
-
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-
-    showNotification('สำรองข้อมูลสำเร็จ!', 'success');
-}
-
-// Restore data
-function restoreData(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    if (!confirm('การกู้คืนจะแทนที่ข้อมูลปัจจุบันทั้งหมด คุณแน่ใจหรือไม่?')) {
-        event.target.value = '';
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        try {
-            const backup = JSON.parse(e.target.result);
-
-            if (!backup.logs || !Array.isArray(backup.logs)) {
-                throw new Error('Invalid backup format');
-            }
-
-            logs = backup.logs;
-            if (backup.categories) {
-                categories = backup.categories;
-                saveCategories();
-            }
-            if (backup.goal) {
-                yearlyGoal = backup.goal;
-                localStorage.setItem('yearlyGoal', JSON.stringify(yearlyGoal));
-            }
-            if (backup.teacherInfo) {
-                teacherInfo = backup.teacherInfo;
-                localStorage.setItem('teacherInfo', JSON.stringify(teacherInfo));
-            }
-            if (backup.teacherProfile) {
-                localStorage.setItem('teacherProfile', JSON.stringify(backup.teacherProfile));
-            }
-            if (backup.googleSyncSettings) {
-                googleSyncSettings = backup.googleSyncSettings;
-                localStorage.setItem('googleSyncSettings', JSON.stringify(googleSyncSettings));
-            }
-
-            saveLogs();
-            initCategoryDropdowns();
-            renderLogs();
-            updateStats();
-
-            showNotification('กู้คืนข้อมูลสำเร็จ!', 'success');
-        } catch (error) {
-            alert('ไม่สามารถกู้คืนข้อมูลได้ กรุณาตรวจสอบไฟล์');
-            console.error(error);
-        }
-    };
-    reader.readAsText(file);
-    event.target.value = '';
-}
+// REMOVED: importFromJSON() - ใช้ pullFromGoogle() แทน
+// REMOVED: backupData() - ซ้ำกับ exportToJSON()
+// REMOVED: restoreData() - ใช้ pullFromGoogle() แทน
+//
+// ระบบใหม่: Google Sheets เป็น source of truth หลัก
+// - ดึงข้อมูล: ใช้ pullFromGoogle()
+// - ส่งออกสำรอง offline: ใช้ exportToJSON() หรือ exportToCSV()
 
 // Export to CSV
 function exportToCSV() {
@@ -2023,38 +1866,141 @@ function doPost(e) {
     }
 
     if (action === 'pull') {
-      // Get data from Google Sheets
+      // Get data from Google Sheets - Read ALL 3 sheets
       const sheetId = getOrCreateSheet(folderId);
-      const sheet = SpreadsheetApp.openById(sheetId).getActiveSheet();
-      const data = sheet.getDataRange().getValues();
+      const ss = SpreadsheetApp.openById(sheetId);
 
-      // Skip header row and convert to logs
+      // === READ SHEET 1: Logs ===
+      let logsSheet = ss.getSheetByName('Logs');
+      if (!logsSheet) {
+        logsSheet = ss.getSheets()[0]; // Fallback to first sheet
+      }
+
+      const logsData = logsSheet.getDataRange().getValues();
       const logs = [];
-      for (let i = 1; i < data.length; i++) {
-        const row = data[i];
-        if (!row[0]) continue; // Skip empty rows
+
+      for (let i = 1; i < logsData.length; i++) {
+        const row = logsData[i];
+        if (!row[0]) continue;
 
         logs.push({
-          id: Date.now() + i,
-          date: row[0],
-          title: row[1],
-          category: row[2],
-          format: row[3],
-          hours: parseFloat(row[4]) || 0,
-          venue: row[5],
-          organizer: row[6],
-          instructor: row[7],
-          competencies: row[8] ? row[8].split(',').map(c => c.trim()) : [],
-          description: row[9],
-          application: row[10],
-          createdAt: new Date().toISOString()
+          id: row[0],
+          date: row[1],
+          title: row[2],
+          category: row[3],
+          format: row[4],
+          hours: parseFloat(row[5]) || 0,
+          venue: row[6],
+          organizer: row[7],
+          instructor: row[8],
+          competencies: row[9] ? row[9].split(',').map(c => c.trim()) : [],
+          description: row[10],
+          application: row[11],
+          createdAt: row[12] || new Date().toISOString(),
+          certificateFiles: [] // Will be populated from Certificate Files sheet
         });
+      }
+
+      // === READ SHEET 2: Settings ===
+      let settingsSheet = ss.getSheetByName('Settings');
+      let categories = [];
+      let yearlyGoal = { total: 0, current: 0 };
+      let teacherInfo = { name: '', school: '' };
+      let teacherProfile = {};
+      let googleSyncSettings = {};
+      let profilePhoto = '';
+
+      if (settingsSheet) {
+        const settingsData = settingsSheet.getDataRange().getValues();
+
+        for (let i = 1; i < settingsData.length; i++) {
+          const row = settingsData[i];
+          const key = row[0];
+          const value = row[1];
+
+          if (key === 'categories') {
+            try {
+              categories = JSON.parse(value);
+            } catch (e) {
+              categories = [];
+            }
+          } else if (key === 'yearlyGoal') {
+            try {
+              yearlyGoal = JSON.parse(value);
+            } catch (e) {
+              yearlyGoal = { total: 0, current: 0 };
+            }
+          } else if (key === 'teacherInfo') {
+            try {
+              teacherInfo = JSON.parse(value);
+            } catch (e) {
+              teacherInfo = { name: '', school: '' };
+            }
+          } else if (key === 'teacherProfile') {
+            try {
+              teacherProfile = JSON.parse(value);
+            } catch (e) {
+              teacherProfile = {};
+            }
+          } else if (key === 'googleSyncSettings') {
+            try {
+              googleSyncSettings = JSON.parse(value);
+            } catch (e) {
+              googleSyncSettings = {};
+            }
+          } else if (key === 'profilePhoto') {
+            profilePhoto = value || '';
+          }
+        }
+      }
+
+      // === READ SHEET 3: Certificate Files ===
+      let filesSheet = ss.getSheetByName('Certificate Files');
+
+      if (filesSheet) {
+        const filesData = filesSheet.getDataRange().getValues();
+
+        for (let i = 1; i < filesData.length; i++) {
+          const row = filesData[i];
+          if (!row[0]) continue;
+
+          const logId = row[0];
+          const fileName = row[2];
+          const fileSize = row[3];
+          const uploaded = row[4] === 'Yes';
+          const gdriveUrl = row[5];
+
+          // Find corresponding log and add file
+          const log = logs.find(l => l.id == logId);
+          if (log) {
+            if (!log.certificateFiles) {
+              log.certificateFiles = [];
+            }
+
+            log.certificateFiles.push({
+              id: Date.now() + Math.random(),
+              name: fileName,
+              size: 0, // Size in text format, can't convert back easily
+              type: '',
+              data: null,
+              uploadedToGDrive: uploaded,
+              gdriveId: null,
+              gdriveUrl: gdriveUrl
+            });
+          }
+        }
       }
 
       return ContentService.createTextOutput(JSON.stringify({
         success: true,
         logs: logs,
-        message: 'Data downloaded successfully!'
+        categories: categories,
+        yearlyGoal: yearlyGoal,
+        teacherInfo: teacherInfo,
+        teacherProfile: teacherProfile,
+        googleSyncSettings: googleSyncSettings,
+        profilePhoto: profilePhoto,
+        message: 'All data downloaded successfully!'
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -2383,18 +2329,15 @@ async function pushToGoogle() {
     }
 }
 
-async function pullFromGoogle() {
+// Auto-load data from Google Sheets on page load (no confirmation)
+async function autoLoadFromGoogle() {
     if (!googleSyncSettings.enabled || !googleSyncSettings.scriptUrl) {
-        alert('กรุณาตั้งค่าและบันทึกการเชื่อมต่อก่อน');
-        return;
-    }
-
-    if (!confirm('ต้องการดาวน์โหลดข้อมูลจาก Google หรือไม่? (ข้อมูลที่ซ้ำกันจะถูกข้าม)')) {
+        console.log('Google Sync not configured, using localStorage');
         return;
     }
 
     try {
-        showNotification('กำลังดาวน์โหลดข้อมูล...', 'success');
+        console.log('Auto-loading data from Google Sheets...');
 
         const payload = {
             action: 'pull',
@@ -2404,40 +2347,94 @@ async function pullFromGoogle() {
         const response = await fetch(googleSyncSettings.scriptUrl, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'text/plain',
             },
             body: JSON.stringify(payload)
         });
 
         const result = await response.json();
 
-        if (result.success && result.logs) {
-            // Merge with existing logs (avoid duplicates)
-            const existingIds = new Set(logs.map(log => log.id));
-            const newLogs = result.logs.filter(log => !existingIds.has(log.id));
+        if (result.success) {
+            // Load ALL data from Google Sheets
+            if (result.logs && result.logs.length > 0) {
+                logs = result.logs;
+                localStorage.setItem('teacherLogs', JSON.stringify(logs));
+            }
 
-            logs = [...logs, ...newLogs];
-            saveLogs();
-            renderLogs();
-            updateStats();
+            if (result.categories && result.categories.length > 0) {
+                categories = result.categories;
+                localStorage.setItem('categories', JSON.stringify(categories));
+            }
+
+            if (result.yearlyGoal) {
+                yearlyGoal = result.yearlyGoal;
+                localStorage.setItem('yearlyGoal', JSON.stringify(yearlyGoal));
+            }
+
+            if (result.teacherInfo) {
+                teacherInfo = result.teacherInfo;
+                localStorage.setItem('teacherInfo', JSON.stringify(teacherInfo));
+            }
+
+            if (result.teacherProfile) {
+                localStorage.setItem('teacherProfile', JSON.stringify(result.teacherProfile));
+            }
+
+            if (result.profilePhoto) {
+                // Update profile photo in memory
+                const profile = JSON.parse(localStorage.getItem('teacherProfile')) || {};
+                profile.photo = result.profilePhoto;
+                localStorage.setItem('teacherProfile', JSON.stringify(profile));
+            }
 
             // Update sync time
             googleSyncSettings.lastSync = new Date().toISOString();
             localStorage.setItem('googleSyncSettings', JSON.stringify(googleSyncSettings));
-            updateSyncStatus();
 
-            showNotification(`ดาวน์โหลดสำเร็จ! เพิ่มข้อมูล ${newLogs.length} รายการ`, 'success');
-        } else {
-            throw new Error(result.message || 'Unknown error');
+            console.log(`Loaded ${logs.length} logs from Google Sheets`);
+
+            // Re-render UI
+            initCategoryDropdowns();
+            renderLogs();
+            updateStats();
+            updateSyncStatus();
         }
 
+    } catch (error) {
+        console.error('Auto-load error:', error);
+        console.log('Using localStorage data instead');
+    }
+}
+
+// Manual pull from Google Sheets (with confirmation)
+async function pullFromGoogle() {
+    if (!googleSyncSettings.enabled || !googleSyncSettings.scriptUrl) {
+        alert('กรุณาตั้งค่าและบันทึกการเชื่อมต่อก่อน');
+        return;
+    }
+
+    if (!confirm('ต้องการดาวน์โหลดข้อมูลทั้งหมดจาก Google Sheets หรือไม่?\n(ข้อมูลปัจจุบันจะถูกแทนที่)')) {
+        return;
+    }
+
+    try {
+        showNotification('กำลังดาวน์โหลดข้อมูล...', 'success');
+        await autoLoadFromGoogle(); // Use same function
+        showNotification(`ดาวน์โหลดสำเร็จ! โหลดข้อมูล ${logs.length} รายการ`, 'success');
     } catch (error) {
         console.error('Pull error:', error);
         showNotification('ดาวน์โหลดล้มเหลว: ' + error.message, 'error');
     }
 }
 
-// Initial render
-initCategoryDropdowns();
-renderLogs();
-updateStats();
+// ========== INITIALIZE APP ==========
+// Auto-load data from Google Sheets first, then render
+(async function initApp() {
+    // Try to load from Google Sheets first
+    await autoLoadFromGoogle();
+
+    // If no data from Google, localStorage will be used automatically
+    initCategoryDropdowns();
+    renderLogs();
+    updateStats();
+})();

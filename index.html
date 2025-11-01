@@ -995,17 +995,11 @@
             <button class="btn-category" onclick="openCategoryModal()">
                 <i class="fas fa-tags"></i> จัดการประเภท
             </button>
-            <button class="btn-import" onclick="document.getElementById('importFileInput').click()">
-                <i class="fas fa-file-import"></i> นำเข้า
-            </button>
             <button class="btn-export" onclick="exportToJSON()">
-                <i class="fas fa-file-export"></i> ส่งออก JSON
+                <i class="fas fa-file-download"></i> ส่งออก JSON
             </button>
-            <button class="btn-backup" onclick="backupData()">
-                <i class="fas fa-database"></i> สำรอง
-            </button>
-            <button class="btn-backup" onclick="document.getElementById('restoreFileInput').click()">
-                <i class="fas fa-upload"></i> กู้คืน
+            <button class="btn-export" onclick="exportToCSV()">
+                <i class="fas fa-file-csv"></i> ส่งออก CSV
             </button>
             <button class="btn-chart" onclick="openChartModal()">
                 <i class="fas fa-chart-bar"></i> กราฟ
@@ -1013,14 +1007,9 @@
             <button class="btn-print" onclick="printOfficialReport()">
                 <i class="fas fa-print"></i> รายงานราชการ
             </button>
-            <button class="btn-export" onclick="exportToCSV()">
-                <i class="fas fa-file-csv"></i> CSV
-            </button>
         </div>
 
-        <!-- Hidden file inputs -->
-        <input type="file" id="importFileInput" class="hidden-file-input" accept=".json" onchange="importFromJSON(event)">
-        <input type="file" id="restoreFileInput" class="hidden-file-input" accept=".json" onchange="restoreData(event)">
+        <!-- ระบบใหม่: ข้อมูลเก็บใน Google Sheets อัตโนมัติ ไม่ต้อง import/backup manual -->
 
         <!-- Main Content -->
         <div class="main-content">
