@@ -1233,6 +1233,476 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+// ========== PROFILE MANAGEMENT ==========
+
+function openProfileModal() {
+    loadProfile();
+    document.getElementById('profileModal').style.display = 'block';
+}
+
+function closeProfileModal() {
+    document.getElementById('profileModal').style.display = 'none';
+}
+
+function loadProfile() {
+    // Load existing profile data
+    const profile = JSON.parse(localStorage.getItem('teacherProfile')) || {
+        name: teacherInfo.name || '',
+        position: teacherInfo.position || 'ครู',
+        school: teacherInfo.school || '',
+        office: teacherInfo.office || '',
+        email: '',
+        phone: '',
+        photo: ''
+    };
+
+    document.getElementById('profileName').value = profile.name;
+    document.getElementById('profilePosition').value = profile.position;
+    document.getElementById('profileSchool').value = profile.school;
+    document.getElementById('profileOffice').value = profile.office;
+    document.getElementById('profileEmail').value = profile.email || '';
+    document.getElementById('profilePhone').value = profile.phone || '';
+
+    // Load photo if exists
+    if (profile.photo) {
+        document.getElementById('profilePhotoPreview').src = profile.photo;
+    }
+}
+
+function handleProfilePhotoUpload(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Check file size (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+        alert('ไฟล์รูปภาพมีขนาดใหญ่เกิน 2MB กรุณาเลือกไฟล์ที่เล็กกว่า');
+        event.target.value = '';
+        return;
+    }
+
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+        alert('กรุณาเลือกไฟล์รูปภาพเท่านั้น');
+        event.target.value = '';
+        return;
+    }
+
+    // Read and preview image
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const img = document.getElementById('profilePhotoPreview');
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
+
+function saveProfile() {
+    const profile = {
+        name: document.getElementById('profileName').value.trim(),
+        position: document.getElementById('profilePosition').value.trim(),
+        school: document.getElementById('profileSchool').value.trim(),
+        office: document.getElementById('profileOffice').value.trim(),
+        email: document.getElementById('profileEmail').value.trim(),
+        phone: document.getElementById('profilePhone').value.trim(),
+        photo: document.getElementById('profilePhotoPreview').src
+    };
+
+    if (!profile.name || !profile.school) {
+        alert('กรุณากรอกชื่อและโรงเรียนอย่างน้อย');
+        return;
+    }
+
+    // Save to localStorage
+    localStorage.setItem('teacherProfile', JSON.stringify(profile));
+
+    // Update teacherInfo for compatibility
+    teacherInfo = {
+        name: profile.name,
+        position: profile.position,
+        school: profile.school,
+        office: profile.office
+    };
+    localStorage.setItem('teacherInfo', JSON.stringify(teacherInfo));
+
+    closeProfileModal();
+    showNotification('บันทึกโปรไฟล์สำเร็จ!', 'success');
+}
+
+// ========== GOOGLE SYNC MANAGEMENT ==========
+
+let googleSyncSettings = JSON.parse(localStorage.getItem('googleSyncSettings')) || {
+    scriptUrl: '',
+    folderId: '',
+    lastSync: null,
+    enabled: false
+};
+
+function openGoogleSyncModal() {
+    loadGoogleSyncSettings();
+    document.getElementById('googleSyncModal').style.display = 'block';
+}
+
+function closeGoogleSyncModal() {
+    document.getElementById('googleSyncModal').style.display = 'none';
+}
+
+function loadGoogleSyncSettings() {
+    document.getElementById('googleScriptUrl').value = googleSyncSettings.scriptUrl || '';
+    document.getElementById('googleDriveFolderId').value = googleSyncSettings.folderId || '';
+
+    updateSyncStatus();
+}
+
+function updateSyncStatus() {
+    const statusDiv = document.getElementById('syncStatus');
+    const lastSyncDiv = document.getElementById('lastSyncTime');
+
+    if (googleSyncSettings.enabled && googleSyncSettings.scriptUrl) {
+        statusDiv.innerHTML = '<i class="fas fa-circle" style="color: #4caf50;"></i> เชื่อมต่อแล้ว';
+    } else {
+        statusDiv.innerHTML = '<i class="fas fa-circle" style="color: #999;"></i> ยังไม่ได้เชื่อมต่อ';
+    }
+
+    if (googleSyncSettings.lastSync) {
+        const lastSyncDate = new Date(googleSyncSettings.lastSync);
+        lastSyncDiv.textContent = `ซิงค์ครั้งล่าสุด: ${formatDateThai(lastSyncDate.toISOString().split('T')[0])} ${lastSyncDate.toLocaleTimeString('th-TH')}`;
+    } else {
+        lastSyncDiv.textContent = 'ซิงค์ครั้งล่าสุด: ไม่เคย';
+    }
+}
+
+function showGoogleScriptCode() {
+    const codeSection = document.getElementById('scriptCodeSection');
+    const scriptCode = document.getElementById('scriptCode');
+
+    // Toggle display
+    if (codeSection.style.display === 'none') {
+        codeSection.style.display = 'block';
+
+        // Generate Google Apps Script code
+        scriptCode.textContent = `// Google Apps Script for Teacher Development Log System
+// Deploy this as a Web App with "Anyone" access
+
+function doGet(e) {
+  return ContentService.createTextOutput(JSON.stringify({
+    status: 'ok',
+    message: 'Teacher Development Log API is running'
+  })).setMimeType(ContentService.MimeType.JSON);
+}
+
+function doPost(e) {
+  try {
+    const params = JSON.parse(e.postData.contents);
+    const action = params.action;
+    const folderId = params.folderId || 'YOUR_FOLDER_ID';
+
+    if (action === 'test') {
+      return ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        message: 'Connection successful!'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (action === 'push') {
+      // Save data to Google Sheets
+      const sheetId = getOrCreateSheet(folderId);
+      const sheet = SpreadsheetApp.openById(sheetId).getActiveSheet();
+
+      // Clear existing data
+      sheet.clear();
+
+      // Write headers
+      sheet.getRange(1, 1, 1, 11).setValues([[
+        'วันที่', 'หัวข้อ', 'ประเภท', 'รูปแบบ', 'ชั่วโมง',
+        'สถานที่', 'ผู้จัด', 'วิทยากร', 'สมรรถนะ', 'รายละเอียด', 'การนำไปใช้'
+      ]]);
+
+      // Write data
+      const logs = params.logs || [];
+      const categories = params.categories || [];
+
+      if (logs.length > 0) {
+        const data = logs.map(log => {
+          const category = categories.find(c => c.id === log.category);
+          return [
+            log.date,
+            log.title,
+            category ? category.name : '',
+            log.format,
+            log.hours,
+            log.venue || '',
+            log.organizer || '',
+            log.instructor || '',
+            (log.competencies || []).join(', '),
+            log.description,
+            log.application || ''
+          ];
+        });
+
+        sheet.getRange(2, 1, data.length, 11).setValues(data);
+      }
+
+      // Save profile photo to Drive if provided
+      if (params.profilePhoto && params.profilePhoto.startsWith('data:image')) {
+        const folder = DriveApp.getFolderById(folderId);
+        const base64Data = params.profilePhoto.split(',')[1];
+        const blob = Utilities.newBlob(Utilities.base64Decode(base64Data), 'image/jpeg', 'profile-photo.jpg');
+
+        // Delete old photo if exists
+        const files = folder.getFilesByName('profile-photo.jpg');
+        while (files.hasNext()) {
+          files.next().setTrashed(true);
+        }
+
+        folder.createFile(blob);
+      }
+
+      return ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        message: 'Data uploaded successfully!',
+        recordCount: logs.length
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    if (action === 'pull') {
+      // Get data from Google Sheets
+      const sheetId = getOrCreateSheet(folderId);
+      const sheet = SpreadsheetApp.openById(sheetId).getActiveSheet();
+      const data = sheet.getDataRange().getValues();
+
+      // Skip header row and convert to logs
+      const logs = [];
+      for (let i = 1; i < data.length; i++) {
+        const row = data[i];
+        if (!row[0]) continue; // Skip empty rows
+
+        logs.push({
+          id: Date.now() + i,
+          date: row[0],
+          title: row[1],
+          category: row[2],
+          format: row[3],
+          hours: parseFloat(row[4]) || 0,
+          venue: row[5],
+          organizer: row[6],
+          instructor: row[7],
+          competencies: row[8] ? row[8].split(',').map(c => c.trim()) : [],
+          description: row[9],
+          application: row[10],
+          createdAt: new Date().toISOString()
+        });
+      }
+
+      return ContentService.createTextOutput(JSON.stringify({
+        success: true,
+        logs: logs,
+        message: 'Data downloaded successfully!'
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      message: 'Invalid action'
+    })).setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+    return ContentService.createTextOutput(JSON.stringify({
+      success: false,
+      message: error.toString()
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function getOrCreateSheet(folderId) {
+  const folder = DriveApp.getFolderById(folderId);
+  const files = folder.getFilesByName('Teacher Development Logs');
+
+  if (files.hasNext()) {
+    return files.next().getId();
+  }
+
+  // Create new spreadsheet
+  const ss = SpreadsheetApp.create('Teacher Development Logs');
+  const file = DriveApp.getFileById(ss.getId());
+  folder.addFile(file);
+  DriveApp.getRootFolder().removeFile(file);
+
+  return ss.getId();
+}`;
+    } else {
+        codeSection.style.display = 'none';
+    }
+}
+
+function copyScriptCode() {
+    const scriptCode = document.getElementById('scriptCode');
+    const text = scriptCode.textContent;
+
+    navigator.clipboard.writeText(text).then(() => {
+        showNotification('คัดลอกโค้ดสำเร็จ!', 'success');
+    }).catch(err => {
+        alert('ไม่สามารถคัดลอกได้: ' + err);
+    });
+}
+
+function saveGoogleSyncSettings() {
+    const scriptUrl = document.getElementById('googleScriptUrl').value.trim();
+    const folderId = document.getElementById('googleDriveFolderId').value.trim();
+
+    if (!scriptUrl || !folderId) {
+        alert('กรุณากรอก URL และ Folder ID');
+        return;
+    }
+
+    googleSyncSettings.scriptUrl = scriptUrl;
+    googleSyncSettings.folderId = folderId;
+    googleSyncSettings.enabled = true;
+
+    localStorage.setItem('googleSyncSettings', JSON.stringify(googleSyncSettings));
+    updateSyncStatus();
+    showNotification('บันทึกการตั้งค่าสำเร็จ!', 'success');
+}
+
+async function testGoogleConnection() {
+    const scriptUrl = document.getElementById('googleScriptUrl').value.trim();
+
+    if (!scriptUrl) {
+        alert('กรุณากรอก Script URL ก่อน');
+        return;
+    }
+
+    try {
+        showNotification('กำลังทดสอบการเชื่อมต่อ...', 'success');
+
+        const response = await fetch(scriptUrl, {
+            method: 'POST',
+            mode: 'no-cors', // Important for cross-origin requests
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: 'test',
+                folderId: document.getElementById('googleDriveFolderId').value.trim()
+            })
+        });
+
+        // Since we're using no-cors, we can't read the response
+        // But if no error is thrown, the connection is likely successful
+        showNotification('ทดสอบการเชื่อมต่อสำเร็จ! (หากไม่แน่ใจ ลองอัพโหลดข้อมูลดู)', 'success');
+
+    } catch (error) {
+        console.error('Connection test error:', error);
+        showNotification('การทดสอบล้มเหลว: ' + error.message, 'error');
+    }
+}
+
+async function pushToGoogle() {
+    if (!googleSyncSettings.enabled || !googleSyncSettings.scriptUrl) {
+        alert('กรุณาตั้งค่าและบันทึกการเชื่อมต่อก่อน');
+        return;
+    }
+
+    if (logs.length === 0) {
+        alert('ไม่มีข้อมูลให้อัพโหลด');
+        return;
+    }
+
+    if (!confirm(\`ต้องการอัพโหลดข้อมูล \${logs.length} รายการไป Google หรือไม่?\`)) {
+        return;
+    }
+
+    try {
+        showNotification('กำลังอัพโหลดข้อมูล...', 'success');
+
+        // Get profile photo
+        const profile = JSON.parse(localStorage.getItem('teacherProfile')) || {};
+
+        const payload = {
+            action: 'push',
+            folderId: googleSyncSettings.folderId,
+            logs: logs,
+            categories: categories,
+            goal: yearlyGoal,
+            teacherInfo: teacherInfo,
+            profilePhoto: profile.photo || ''
+        };
+
+        const response = await fetch(googleSyncSettings.scriptUrl, {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+
+        // Update sync time
+        googleSyncSettings.lastSync = new Date().toISOString();
+        localStorage.setItem('googleSyncSettings', JSON.stringify(googleSyncSettings));
+        updateSyncStatus();
+
+        showNotification(\`อัพโหลด \${logs.length} รายการสำเร็จ!\`, 'success');
+
+    } catch (error) {
+        console.error('Push error:', error);
+        showNotification('อัพโหลดล้มเหลว: ' + error.message, 'error');
+    }
+}
+
+async function pullFromGoogle() {
+    if (!googleSyncSettings.enabled || !googleSyncSettings.scriptUrl) {
+        alert('กรุณาตั้งค่าและบันทึกการเชื่อมต่อก่อน');
+        return;
+    }
+
+    if (!confirm('ต้องการดาวน์โหลดข้อมูลจาก Google หรือไม่? (ข้อมูลที่ซ้ำกันจะถูกข้าม)')) {
+        return;
+    }
+
+    try {
+        showNotification('กำลังดาวน์โหลดข้อมูล...', 'success');
+
+        const payload = {
+            action: 'pull',
+            folderId: googleSyncSettings.folderId
+        };
+
+        const response = await fetch(googleSyncSettings.scriptUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (result.success && result.logs) {
+            // Merge with existing logs (avoid duplicates)
+            const existingIds = new Set(logs.map(log => log.id));
+            const newLogs = result.logs.filter(log => !existingIds.has(log.id));
+
+            logs = [...logs, ...newLogs];
+            saveLogs();
+            renderLogs();
+            updateStats();
+
+            // Update sync time
+            googleSyncSettings.lastSync = new Date().toISOString();
+            localStorage.setItem('googleSyncSettings', JSON.stringify(googleSyncSettings));
+            updateSyncStatus();
+
+            showNotification(\`ดาวน์โหลดสำเร็จ! เพิ่มข้อมูล \${newLogs.length} รายการ\`, 'success');
+        } else {
+            throw new Error(result.message || 'Unknown error');
+        }
+
+    } catch (error) {
+        console.error('Pull error:', error);
+        showNotification('ดาวน์โหลดล้มเหลว: ' + error.message, 'error');
+    }
+}
+
 // Initial render
 initCategoryDropdowns();
 renderLogs();

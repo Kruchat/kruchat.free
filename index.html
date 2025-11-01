@@ -162,6 +162,16 @@
             gap: 8px;
         }
 
+        .toolbar .btn-profile {
+            background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);
+            color: white;
+        }
+
+        .toolbar .btn-sync {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
         .toolbar .btn-category {
             background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
             color: white;
@@ -792,6 +802,12 @@
 
         <!-- Toolbar -->
         <div class="toolbar no-print">
+            <button class="btn-profile" onclick="openProfileModal()">
+                <i class="fas fa-user-circle"></i> โปรไฟล์
+            </button>
+            <button class="btn-sync" onclick="openGoogleSyncModal()">
+                <i class="fab fa-google-drive"></i> Google Sync
+            </button>
             <button class="btn-category" onclick="openCategoryModal()">
                 <i class="fas fa-tags"></i> จัดการประเภท
             </button>
@@ -1130,6 +1146,145 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" onclick="closeChartModal()">ปิด</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);">
+                <h2><i class="fas fa-user-circle"></i> โปรไฟล์ครู</h2>
+                <button class="close" onclick="closeProfileModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div style="position: relative; display: inline-block;">
+                        <img id="profilePhotoPreview"
+                             src="https://via.placeholder.com/150/8e2de2/ffffff?text=รูปภาพ"
+                             alt="Profile Photo"
+                             style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 4px solid #8e2de2;">
+                        <button onclick="document.getElementById('profilePhotoInput').click()"
+                                style="position: absolute; bottom: 0; right: 0; width: 40px; height: 40px; border-radius: 50%; background: #8e2de2; color: white; border: 3px solid white; cursor: pointer; font-size: 1.2rem;">
+                            <i class="fas fa-camera"></i>
+                        </button>
+                    </div>
+                    <input type="file" id="profilePhotoInput" class="hidden-file-input" accept="image/*" onchange="handleProfilePhotoUpload(event)">
+                </div>
+
+                <div class="form-group">
+                    <label for="profileName"><i class="fas fa-user"></i> ชื่อ-นามสกุล</label>
+                    <input type="text" id="profileName" placeholder="เช่น นายสมชาย ใจดี">
+                </div>
+
+                <div class="form-group">
+                    <label for="profilePosition"><i class="fas fa-id-badge"></i> ตำแหน่ง</label>
+                    <input type="text" id="profilePosition" placeholder="เช่น ครู, ครูผู้ช่วย">
+                </div>
+
+                <div class="form-group">
+                    <label for="profileSchool"><i class="fas fa-school"></i> โรงเรียน</label>
+                    <input type="text" id="profileSchool" placeholder="เช่น โรงเรียนวัดไทร">
+                </div>
+
+                <div class="form-group">
+                    <label for="profileOffice"><i class="fas fa-building"></i> สำนักงานเขตพื้นที่การศึกษา</label>
+                    <input type="text" id="profileOffice" placeholder="เช่น สพป.กรุงเทพมหานคร เขต 1">
+                </div>
+
+                <div class="form-group">
+                    <label for="profileEmail"><i class="fas fa-envelope"></i> อีเมล</label>
+                    <input type="email" id="profileEmail" placeholder="email@example.com">
+                </div>
+
+                <div class="form-group">
+                    <label for="profilePhone"><i class="fas fa-phone"></i> เบอร์โทรศัพท์</label>
+                    <input type="tel" id="profilePhone" placeholder="081-234-5678">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeProfileModal()">ยกเลิก</button>
+                <button class="btn btn-primary" onclick="saveProfile()" style="background: linear-gradient(135deg, #8e2de2 0%, #4a00e0 100%);">
+                    <i class="fas fa-save"></i> บันทึก
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Sync Modal -->
+    <div id="googleSyncModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                <h2><i class="fab fa-google-drive"></i> Google Sync Configuration</h2>
+                <button class="close" onclick="closeGoogleSyncModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div style="background: #e7f5ff; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #0288d1;">
+                    <h4 style="color: #0288d1; margin-bottom: 10px;"><i class="fas fa-info-circle"></i> วิธีการตั้งค่า Google Sync</h4>
+                    <ol style="line-height: 2; color: #333;">
+                        <li>คัดลอกโค้ด Google Apps Script ด้านล่าง</li>
+                        <li>ไปที่ <a href="https://script.google.com" target="_blank" style="color: #0288d1;">script.google.com</a></li>
+                        <li>สร้างโปรเจกต์ใหม่ และวางโค้ด</li>
+                        <li>Deploy เป็น Web App และคัดลอก URL</li>
+                        <li>สร้างโฟลเดอร์ใน Google Drive และคัดลอก Folder ID</li>
+                        <li>นำ URL และ Folder ID มากรอกด้านล่าง</li>
+                    </ol>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <button class="btn btn-primary" onclick="showGoogleScriptCode()" style="width: 100%; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                        <i class="fas fa-code"></i> แสดงโค้ด Google Apps Script
+                    </button>
+                </div>
+
+                <div id="scriptCodeSection" style="display: none; margin-bottom: 20px;">
+                    <div style="background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 8px; overflow-x: auto; position: relative;">
+                        <button onclick="copyScriptCode()" style="position: absolute; top: 10px; right: 10px; padding: 5px 15px; background: #43e97b; border: none; border-radius: 5px; cursor: pointer; color: white;">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                        <pre id="scriptCode" style="margin: 0; font-family: 'Courier New', monospace; font-size: 0.85rem; white-space: pre-wrap;"></pre>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="googleScriptUrl"><i class="fas fa-link"></i> Google Apps Script Web App URL</label>
+                    <input type="url" id="googleScriptUrl" placeholder="https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec">
+                    <small style="color: #666;">URL ที่ได้จากการ Deploy Web App</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="googleDriveFolderId"><i class="fab fa-google-drive"></i> Google Drive Folder ID</label>
+                    <input type="text" id="googleDriveFolderId" placeholder="1Abc-Xyz123_FolderID">
+                    <small style="color: #666;">ID ของโฟลเดอร์ที่ต้องการเก็บไฟล์ (ดูจาก URL: /folders/<strong>FOLDER_ID</strong>)</small>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                    <h4 style="margin-bottom: 10px;"><i class="fas fa-sync"></i> สถานะการซิงค์</h4>
+                    <div id="syncStatus" style="color: #666;">
+                        <i class="fas fa-circle" style="color: #999;"></i> ยังไม่ได้เชื่อมต่อ
+                    </div>
+                    <div id="lastSyncTime" style="color: #999; font-size: 0.9rem; margin-top: 5px;">
+                        ซิงค์ครั้งล่าสุด: ไม่เคย
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;">
+                    <button class="btn btn-primary" onclick="testGoogleConnection()" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                        <i class="fas fa-flask"></i> ทดสอบการเชื่อมต่อ
+                    </button>
+                    <button class="btn btn-primary" onclick="saveGoogleSyncSettings()" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                        <i class="fas fa-save"></i> บันทึกการตั้งค่า
+                    </button>
+                    <button class="btn btn-primary" onclick="pushToGoogle()" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                        <i class="fas fa-cloud-upload-alt"></i> อัพโหลดไป Google
+                    </button>
+                    <button class="btn btn-primary" onclick="pullFromGoogle()" style="background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);">
+                        <i class="fas fa-cloud-download-alt"></i> ดาวน์โหลดจาก Google
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeGoogleSyncModal()">ปิด</button>
             </div>
         </div>
     </div>
