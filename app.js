@@ -1607,7 +1607,7 @@ async function pushToGoogle() {
         return;
     }
 
-    if (!confirm(\`ต้องการอัพโหลดข้อมูล \${logs.length} รายการไป Google หรือไม่?\`)) {
+    if (!confirm(`ต้องการอัพโหลดข้อมูล ${logs.length} รายการไป Google หรือไม่?`)) {
         return;
     }
 
@@ -1641,7 +1641,7 @@ async function pushToGoogle() {
         localStorage.setItem('googleSyncSettings', JSON.stringify(googleSyncSettings));
         updateSyncStatus();
 
-        showNotification(\`อัพโหลด \${logs.length} รายการสำเร็จ!\`, 'success');
+        showNotification(`อัพโหลด ${logs.length} รายการสำเร็จ!`, 'success');
 
     } catch (error) {
         console.error('Push error:', error);
@@ -1692,7 +1692,7 @@ async function pullFromGoogle() {
             localStorage.setItem('googleSyncSettings', JSON.stringify(googleSyncSettings));
             updateSyncStatus();
 
-            showNotification(\`ดาวน์โหลดสำเร็จ! เพิ่มข้อมูล \${newLogs.length} รายการ\`, 'success');
+            showNotification(`ดาวน์โหลดสำเร็จ! เพิ่มข้อมูล ${newLogs.length} รายการ`, 'success');
         } else {
             throw new Error(result.message || 'Unknown error');
         }
