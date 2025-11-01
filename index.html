@@ -928,8 +928,13 @@
 <body>
     <div class="container">
         <div class="header no-print">
-            <h1><i class="fas fa-graduation-cap"></i> ระบบบันทึกการพัฒนาตนเองของครู</h1>
-            <p>Professional Development Log System</p>
+            <h1>
+                <i class="fas fa-graduation-cap"></i> ระบบบันทึกการพัฒนาตนเองของครู
+                <span id="syncIndicator" style="display: none; font-size: 0.75rem; color: #4caf50; margin-left: 15px; font-weight: normal;">
+                    <i class="fas fa-sync fa-spin"></i> กำลังบันทึก...
+                </span>
+            </h1>
+            <p>Professional Development Log System <span id="autoSaveStatus" style="font-size: 0.85rem; color: #4caf50;"></span></p>
         </div>
 
         <!-- Stats Container -->

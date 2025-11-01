@@ -211,10 +211,72 @@ document.getElementById('filterMonth').addEventListener('change', renderLogs);
 document.getElementById('sortBy').addEventListener('change', renderLogs);
 document.getElementById('searchInput').addEventListener('input', renderLogs);
 
+// ========== AUTO SAVE TO GOOGLE ==========
+
+let autoSaveTimeout = null;
+let isSyncing = false;
+
+// Auto save when data changes
+function autoSaveToGoogle() {
+    if (!googleSyncSettings.enabled || !googleSyncSettings.scriptUrl) {
+        return; // Skip if not configured
+    }
+
+    // Clear existing timeout
+    if (autoSaveTimeout) {
+        clearTimeout(autoSaveTimeout);
+    }
+
+    // Debounce: wait 2 seconds after last change
+    autoSaveTimeout = setTimeout(() => {
+        if (!isSyncing) {
+            syncToGoogleSilently();
+        }
+    }, 2000);
+}
+
+// Silent sync without user interaction
+async function syncToGoogleSilently() {
+    if (isSyncing || logs.length === 0) return;
+
+    try {
+        isSyncing = true;
+        showSyncIndicator(true);
+        await pushToGoogleQuick(true); // silent mode
+        updateAutoSaveStatus();
+    } catch (error) {
+        console.error('Auto-save error:', error);
+    } finally {
+        isSyncing = false;
+        showSyncIndicator(false);
+    }
+}
+
+// Show/hide sync indicator
+function showSyncIndicator(show) {
+    const indicator = document.getElementById('syncIndicator');
+    if (indicator) {
+        indicator.style.display = show ? 'inline' : 'none';
+    }
+}
+
+// Update auto-save status
+function updateAutoSaveStatus() {
+    const statusEl = document.getElementById('autoSaveStatus');
+    if (statusEl && googleSyncSettings.enabled) {
+        const now = new Date();
+        statusEl.innerHTML = `<i class="fas fa-check-circle"></i> Auto-saved ${now.toLocaleTimeString('th-TH')}`;
+        setTimeout(() => {
+            statusEl.innerHTML = '';
+        }, 3000);
+    }
+}
+
 // Save logs to localStorage
 function saveLogs() {
     localStorage.setItem('teacherLogs', JSON.stringify(logs));
     autoBackup();
+    autoSaveToGoogle(); // Auto-save to Google
 }
 
 // Auto backup
@@ -1684,13 +1746,15 @@ function showGoogleScriptCode() {
         codeSection.style.display = 'block';
 
         // Generate Google Apps Script code
-        scriptCode.textContent = `// Google Apps Script for Teacher Development Log System
+        scriptCode.textContent = `// Google Apps Script for Teacher Development Log System v3.2
 // Deploy this as a Web App with "Anyone" access
+// IMPORTANT: Set "Execute as: Me" and "Who has access: Anyone"
 
 function doGet(e) {
   return ContentService.createTextOutput(JSON.stringify({
     status: 'ok',
-    message: 'Teacher Development Log API is running'
+    message: 'Teacher Development Log API v3.2 is running',
+    timestamp: new Date().toISOString()
   })).setMimeType(ContentService.MimeType.JSON);
 }
 
@@ -1703,7 +1767,9 @@ function doPost(e) {
     if (action === 'test') {
       return ContentService.createTextOutput(JSON.stringify({
         success: true,
-        message: 'Connection successful!'
+        message: 'Connection successful!',
+        version: '3.2',
+        timestamp: new Date().toISOString()
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
@@ -2046,6 +2112,50 @@ async function testGoogleConnection() {
     }
 }
 
+// Quick sync for auto-save (no file upload)
+async function pushToGoogleQuick(silent = false) {
+    if (!googleSyncSettings.enabled || !googleSyncSettings.scriptUrl) return;
+
+    try {
+        const profile = JSON.parse(localStorage.getItem('teacherProfile')) || {};
+
+        const payload = {
+            action: 'push',
+            folderId: googleSyncSettings.folderId,
+            logs: logs,
+            categories: categories,
+            goal: yearlyGoal,
+            teacherInfo: teacherInfo,
+            teacherProfile: profile,
+            googleSyncSettings: {
+                scriptUrl: googleSyncSettings.scriptUrl,
+                folderId: googleSyncSettings.folderId,
+                enabled: googleSyncSettings.enabled
+            },
+            profilePhoto: profile.photo || ''
+        };
+
+        await fetch(googleSyncSettings.scriptUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'text/plain',
+            },
+            body: JSON.stringify(payload)
+        });
+
+        googleSyncSettings.lastSync = new Date().toISOString();
+        localStorage.setItem('googleSyncSettings', JSON.stringify(googleSyncSettings));
+        updateSyncStatus();
+
+        if (!silent) {
+            showNotification('บันทึกข้อมูลสำเร็จ!', 'success');
+        }
+    } catch (error) {
+        console.error('Quick sync error:', error);
+    }
+}
+
+// Full sync with file upload
 async function pushToGoogle() {
     if (!googleSyncSettings.enabled || !googleSyncSettings.scriptUrl) {
         alert('กรุณาตั้งค่าและบันทึกการเชื่อมต่อก่อน');
@@ -2060,7 +2170,7 @@ async function pushToGoogle() {
     // Count total files
     const totalFiles = logs.reduce((sum, log) => sum + (log.certificateFiles?.length || 0), 0);
 
-    if (!confirm(`ต้องการอัพโหลดข้อมูล ${logs.length} รายการ และไฟล์ ${totalFiles} ไฟล์ไป Google หรือไม่?`)) {
+    if (!confirm(`ต้องการอัพโหลดข้อมูลและไฟล์ ${totalFiles} ไฟล์ไป Google หรือไม่?\n(ไฟล์ขนาดใหญ่อาจใช้เวลานาน)`)) {
         return;
     }
 
@@ -2095,7 +2205,7 @@ async function pushToGoogle() {
                         const uploadResponse = await fetch(googleSyncSettings.scriptUrl, {
                             method: 'POST',
                             headers: {
-                                'Content-Type': 'application/json',
+                                'Content-Type': 'text/plain',
                             },
                             body: JSON.stringify(uploadPayload)
                         });
@@ -2157,9 +2267,8 @@ async function pushToGoogle() {
 
         const response = await fetch(googleSyncSettings.scriptUrl, {
             method: 'POST',
-            mode: 'no-cors',
             headers: {
-                'Content-Type': 'application/json',
+                'Content-Type': 'text/plain',
             },
             body: JSON.stringify(payload)
         });
@@ -2169,7 +2278,13 @@ async function pushToGoogle() {
         localStorage.setItem('googleSyncSettings', JSON.stringify(googleSyncSettings));
         updateSyncStatus();
 
-        showNotification(`อัพโหลดสำเร็จ! ${logs.length} รายการ, ${uploadedCount} ไฟล์`, 'success');
+        const result = await response.json();
+
+        if (result.success) {
+            showNotification(`✅ อัพโหลดสำเร็จ! ${logs.length} รายการ, ${uploadedCount}/${totalFiles} ไฟล์`, 'success');
+        } else {
+            showNotification(`⚠️ อัพโหลดข้อมูลสำเร็จ แต่ ${totalFiles - uploadedCount} ไฟล์ล้มเหลว`, 'success');
+        }
 
     } catch (error) {
         console.error('Push error:', error);
