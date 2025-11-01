@@ -235,13 +235,18 @@ function autoSaveToGoogle() {
     }, 2000);
 }
 
-// Silent sync without user interaction
+// Silent sync without user interaction - includes automatic file upload
 async function syncToGoogleSilently() {
     if (isSyncing || logs.length === 0) return;
 
     try {
         isSyncing = true;
         showSyncIndicator(true);
+
+        // First, upload any pending certificate files
+        await uploadPendingFilesAuto();
+
+        // Then save all data to Google Sheets
         await pushToGoogleQuick(true); // silent mode
         updateAutoSaveStatus();
     } catch (error) {
@@ -252,11 +257,97 @@ async function syncToGoogleSilently() {
     }
 }
 
+// Automatically upload pending certificate files in the background
+async function uploadPendingFilesAuto() {
+    if (!googleSyncSettings.enabled || !googleSyncSettings.scriptUrl) {
+        return;
+    }
+
+    // Count pending files
+    let pendingCount = 0;
+    for (const log of logs) {
+        if (log.certificateFiles) {
+            pendingCount += log.certificateFiles.filter(f => !f.uploadedToGDrive).length;
+        }
+    }
+
+    if (pendingCount === 0) {
+        return; // No files to upload
+    }
+
+    // Find logs with pending files (not yet uploaded to Google Drive)
+    let hasChanges = false;
+    let uploadedCount = 0;
+
+    for (const log of logs) {
+        if (!log.certificateFiles || log.certificateFiles.length === 0) {
+            continue;
+        }
+
+        for (let i = 0; i < log.certificateFiles.length; i++) {
+            const file = log.certificateFiles[i];
+
+            // Skip if already uploaded
+            if (file.uploadedToGDrive && file.gdriveUrl) {
+                continue;
+            }
+
+            // Show upload progress
+            showSyncIndicator(true, `กำลังอัพโหลดไฟล์... (${uploadedCount + 1}/${pendingCount})`);
+
+            // Upload file to Google Drive
+            try {
+                const uploadPayload = {
+                    action: 'uploadFile',
+                    folderId: googleSyncSettings.folderId,
+                    fileName: file.name,
+                    fileData: file.data,
+                    logId: log.id
+                };
+
+                const uploadResponse = await fetch(googleSyncSettings.scriptUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain',
+                    },
+                    body: JSON.stringify(uploadPayload)
+                });
+
+                const uploadResult = await uploadResponse.json();
+
+                if (uploadResult.success) {
+                    // Update file with Google Drive info
+                    log.certificateFiles[i] = {
+                        ...file,
+                        data: null, // Remove base64 data to save space
+                        uploadedToGDrive: true,
+                        gdriveId: uploadResult.fileId,
+                        gdriveUrl: uploadResult.fileUrl
+                    };
+                    hasChanges = true;
+                    uploadedCount++;
+                }
+            } catch (uploadError) {
+                console.error('Auto file upload error:', uploadError);
+                // Continue with next file even if one fails
+            }
+        }
+    }
+
+    // Save updated logs if there were any changes
+    if (hasChanges) {
+        localStorage.setItem('teacherLogs', JSON.stringify(logs));
+    }
+}
+
 // Show/hide sync indicator
-function showSyncIndicator(show) {
+function showSyncIndicator(show, message = 'กำลังบันทึก...') {
     const indicator = document.getElementById('syncIndicator');
     if (indicator) {
         indicator.style.display = show ? 'inline' : 'none';
+        if (show) {
+            indicator.innerHTML = `<i class="fas fa-sync fa-spin"></i> ${message}`;
+        }
     }
 }
 
