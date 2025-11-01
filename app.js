@@ -1710,24 +1710,29 @@ function doPost(e) {
     if (action === 'push') {
       // Save data to Google Sheets
       const sheetId = getOrCreateSheet(folderId);
-      const sheet = SpreadsheetApp.openById(sheetId).getActiveSheet();
+      const ss = SpreadsheetApp.openById(sheetId);
 
-      // Clear existing data
-      sheet.clear();
+      // === SHEET 1: Logs ===
+      let logsSheet = ss.getSheetByName('Logs');
+      if (!logsSheet) {
+        logsSheet = ss.insertSheet('Logs');
+      }
+      logsSheet.clear();
 
-      // Write headers
-      sheet.getRange(1, 1, 1, 11).setValues([[
+      // Write headers for Logs
+      logsSheet.getRange(1, 1, 1, 12).setValues([[
         'วันที่', 'หัวข้อ', 'ประเภท', 'รูปแบบ', 'ชั่วโมง',
-        'สถานที่', 'ผู้จัด', 'วิทยากร', 'สมรรถนะ', 'รายละเอียด', 'การนำไปใช้'
-      ]]);
+        'สถานที่', 'ผู้จัด', 'วิทยากร', 'สมรรถนะ', 'รายละเอียด', 'การนำไปใช้', 'จำนวนไฟล์'
+      ]]).setFontWeight('bold').setBackground('#667eea').setFontColor('#ffffff');
 
-      // Write data
+      // Write logs data
       const logs = params.logs || [];
       const categories = params.categories || [];
 
       if (logs.length > 0) {
         const data = logs.map(log => {
           const category = categories.find(c => c.id === log.category);
+          const fileCount = log.certificateFiles ? log.certificateFiles.length : 0;
           return [
             log.date,
             log.title,
@@ -1739,11 +1744,93 @@ function doPost(e) {
             log.instructor || '',
             (log.competencies || []).join(', '),
             log.description,
-            log.application || ''
+            log.application || '',
+            fileCount
           ];
         });
 
-        sheet.getRange(2, 1, data.length, 11).setValues(data);
+        logsSheet.getRange(2, 1, data.length, 12).setValues(data);
+      }
+
+      // === SHEET 2: Settings ===
+      let settingsSheet = ss.getSheetByName('Settings');
+      if (!settingsSheet) {
+        settingsSheet = ss.insertSheet('Settings');
+      }
+      settingsSheet.clear();
+
+      // Write Settings data
+      const settingsData = [
+        ['ข้อมูล', 'รายละเอียด'],
+        [],
+        ['=== ข้อมูลครู ===', ''],
+        ['ชื่อ-นามสกุล', params.teacherProfile?.name || params.teacherInfo?.name || ''],
+        ['ตำแหน่ง', params.teacherProfile?.position || params.teacherInfo?.position || ''],
+        ['โรงเรียน', params.teacherProfile?.school || params.teacherInfo?.school || ''],
+        ['สพท.', params.teacherProfile?.office || params.teacherInfo?.office || ''],
+        ['อีเมล', params.teacherProfile?.email || ''],
+        ['เบอร์โทร', params.teacherProfile?.phone || ''],
+        [],
+        ['=== เป้าหมายประจำปี ===', ''],
+        ['ปี พ.ศ.', params.goal?.year || ''],
+        ['เป้าหมายชั่วโมง', params.goal?.hours || ''],
+        [],
+        ['=== การตั้งค่า Google Sync ===', ''],
+        ['Script URL', params.googleSyncSettings?.scriptUrl || ''],
+        ['Folder ID', params.googleSyncSettings?.folderId || ''],
+        ['เปิดใช้งาน', params.googleSyncSettings?.enabled ? 'Yes' : 'No'],
+        [],
+        ['=== ประเภทกิจกรรม ===', '']
+      ];
+
+      // Add categories
+      if (categories && categories.length > 0) {
+        categories.forEach(cat => {
+          settingsData.push([cat.name, cat.color]);
+        });
+      }
+
+      settingsSheet.getRange(1, 1, settingsData.length, 2).setValues(settingsData);
+      settingsSheet.getRange(1, 1, 1, 2).setFontWeight('bold').setBackground('#764ba2').setFontColor('#ffffff');
+
+      // === SHEET 3: Certificate Files ===
+      let filesSheet = ss.getSheetByName('Certificate Files');
+      if (!filesSheet) {
+        filesSheet = ss.insertSheet('Certificate Files');
+      }
+      filesSheet.clear();
+
+      // Write headers for Files
+      filesSheet.getRange(1, 1, 1, 6).setValues([[
+        'Log ID', 'กิจกรรม', 'ชื่อไฟล์', 'ขนาด', 'อัพโหลดแล้ว', 'Google Drive URL'
+      ]]).setFontWeight('bold').setBackground('#43e97b').setFontColor('#ffffff');
+
+      // Collect all files from all logs
+      const allFiles = [];
+      logs.forEach(log => {
+        if (log.certificateFiles && log.certificateFiles.length > 0) {
+          log.certificateFiles.forEach(file => {
+            allFiles.push([
+              log.id,
+              log.title,
+              file.name,
+              formatFileSize(file.size),
+              file.uploadedToGDrive ? 'Yes' : 'No',
+              file.gdriveUrl || ''
+            ]);
+          });
+        }
+      });
+
+      if (allFiles.length > 0) {
+        filesSheet.getRange(2, 1, allFiles.length, 6).setValues(allFiles);
+
+        // Make URLs clickable
+        for (let i = 0; i < allFiles.length; i++) {
+          if (allFiles[i][5]) {
+            filesSheet.getRange(i + 2, 6).setFormula('=HYPERLINK("' + allFiles[i][5] + '", "Open")');
+          }
+        }
       }
 
       // Save profile photo to Drive if provided
@@ -1764,8 +1851,18 @@ function doPost(e) {
       return ContentService.createTextOutput(JSON.stringify({
         success: true,
         message: 'Data uploaded successfully!',
-        recordCount: logs.length
+        recordCount: logs.length,
+        fileCount: allFiles.length
       })).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    // Helper function for formatting file size in Google Apps Script
+    function formatFileSize(bytes) {
+      if (bytes === 0) return '0 Bytes';
+      const k = 1024;
+      const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
     }
 
     if (action === 'pull') {
@@ -1960,23 +2057,101 @@ async function pushToGoogle() {
         return;
     }
 
-    if (!confirm(`ต้องการอัพโหลดข้อมูล ${logs.length} รายการไป Google หรือไม่?`)) {
+    // Count total files
+    const totalFiles = logs.reduce((sum, log) => sum + (log.certificateFiles?.length || 0), 0);
+
+    if (!confirm(`ต้องการอัพโหลดข้อมูล ${logs.length} รายการ และไฟล์ ${totalFiles} ไฟล์ไป Google หรือไม่?`)) {
         return;
     }
 
     try {
-        showNotification('กำลังอัพโหลดข้อมูล...', 'success');
+        showNotification('กำลังเตรียมข้อมูล...', 'success');
 
-        // Get profile photo
+        // Step 1: Upload all certificate files to Google Drive
+        let uploadedCount = 0;
+        const updatedLogs = [];
+
+        for (const log of logs) {
+            if (log.certificateFiles && log.certificateFiles.length > 0) {
+                showNotification(`กำลังอัพโหลดไฟล์... (${uploadedCount}/${totalFiles})`, 'success');
+
+                const uploadedFiles = [];
+                for (const file of log.certificateFiles) {
+                    // Skip if already uploaded
+                    if (file.uploadedToGDrive && file.gdriveUrl) {
+                        uploadedFiles.push(file);
+                        continue;
+                    }
+
+                    try {
+                        const uploadPayload = {
+                            action: 'uploadFile',
+                            folderId: googleSyncSettings.folderId,
+                            fileName: file.name,
+                            fileData: file.data,
+                            logId: log.id
+                        };
+
+                        const uploadResponse = await fetch(googleSyncSettings.scriptUrl, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(uploadPayload)
+                        });
+
+                        const uploadResult = await uploadResponse.json();
+
+                        if (uploadResult.success) {
+                            uploadedFiles.push({
+                                ...file,
+                                data: null, // Remove base64 data to save space
+                                uploadedToGDrive: true,
+                                gdriveId: uploadResult.fileId,
+                                gdriveUrl: uploadResult.fileUrl
+                            });
+                            uploadedCount++;
+                        } else {
+                            // Keep original if upload fails
+                            uploadedFiles.push(file);
+                        }
+                    } catch (uploadError) {
+                        console.error('File upload error:', uploadError);
+                        uploadedFiles.push(file);
+                    }
+                }
+
+                updatedLogs.push({
+                    ...log,
+                    certificateFiles: uploadedFiles
+                });
+            } else {
+                updatedLogs.push(log);
+            }
+        }
+
+        // Update local logs with Google Drive URLs
+        logs.splice(0, logs.length, ...updatedLogs);
+        saveLogs();
+
+        // Step 2: Upload all data to Google Sheets
+        showNotification('กำลังบันทึกข้อมูลลง Google Sheets...', 'success');
+
         const profile = JSON.parse(localStorage.getItem('teacherProfile')) || {};
 
         const payload = {
             action: 'push',
             folderId: googleSyncSettings.folderId,
-            logs: logs,
+            logs: updatedLogs,
             categories: categories,
             goal: yearlyGoal,
             teacherInfo: teacherInfo,
+            teacherProfile: profile,
+            googleSyncSettings: {
+                scriptUrl: googleSyncSettings.scriptUrl,
+                folderId: googleSyncSettings.folderId,
+                enabled: googleSyncSettings.enabled
+            },
             profilePhoto: profile.photo || ''
         };
 
@@ -1994,7 +2169,7 @@ async function pushToGoogle() {
         localStorage.setItem('googleSyncSettings', JSON.stringify(googleSyncSettings));
         updateSyncStatus();
 
-        showNotification(`อัพโหลด ${logs.length} รายการสำเร็จ!`, 'success');
+        showNotification(`อัพโหลดสำเร็จ! ${logs.length} รายการ, ${uploadedCount} ไฟล์`, 'success');
 
     } catch (error) {
         console.error('Push error:', error);
