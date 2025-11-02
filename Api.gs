@@ -663,6 +663,183 @@ const Api = {
   },
 
   // ============================================================
+  // AUTO SETUP
+  // ============================================================
+
+  /**
+   * Check if system is set up
+   */
+  checkSetup: function() {
+    try {
+      const props = PropertiesService.getScriptProperties();
+      const sheetId = props.getProperty('SHEET_ID');
+      const folderId = props.getProperty('DRIVE_FOLDER_ID');
+
+      const isConfigured = !!(sheetId && folderId);
+
+      return {
+        ok: true,
+        data: {
+          isConfigured: isConfigured,
+          sheetId: sheetId || null,
+          folderId: folderId || null,
+          sheetName: props.getProperty('SHEET_NAME') || 'documents'
+        }
+      };
+    } catch (error) {
+      Logger.log('Error in checkSetup: ' + error.toString());
+      return { ok: false, error: error.toString() };
+    }
+  },
+
+  /**
+   * Auto setup: Create Spreadsheet and Drive Folder
+   */
+  autoSetup: function(payload) {
+    try {
+      const sheetName = payload.sheetName || 'บันทึกเอกสารส่วนตัว';
+      const folderName = payload.folderName || 'เอกสารส่วนตัว';
+      const adminPass = payload.adminPass || 'admin123';
+
+      Logger.log('Starting auto setup...');
+
+      // 1. Create new Spreadsheet
+      const ss = SpreadsheetApp.create(sheetName);
+      const sheetId = ss.getId();
+      Logger.log('Spreadsheet created: ' + sheetId);
+
+      // 2. Setup the documents sheet
+      const sheet = ss.getSheets()[0];
+      sheet.setName('documents');
+      this.initializeSheet(sheet);
+      Logger.log('Sheet initialized with headers');
+
+      // 3. Create Drive folder
+      const folder = DriveApp.createFolder(folderName);
+      const folderId = folder.getId();
+      Logger.log('Drive folder created: ' + folderId);
+
+      // 4. Move spreadsheet to the folder
+      const file = DriveApp.getFileById(sheetId);
+      file.moveTo(folder);
+      Logger.log('Spreadsheet moved to folder');
+
+      // 5. Save configuration to Script Properties
+      const props = PropertiesService.getScriptProperties();
+      props.setProperty('SHEET_ID', sheetId);
+      props.setProperty('SHEET_NAME', 'documents');
+      props.setProperty('DRIVE_FOLDER_ID', folderId);
+      props.setProperty('ADMIN_PASS', adminPass);
+      Logger.log('Configuration saved to Script Properties');
+
+      // 6. Create sample data (optional)
+      if (payload.createSampleData) {
+        this.createSampleData(sheet);
+        Logger.log('Sample data created');
+      }
+
+      return {
+        ok: true,
+        data: {
+          message: 'Auto setup completed successfully!',
+          sheetId: sheetId,
+          sheetUrl: ss.getUrl(),
+          folderId: folderId,
+          folderUrl: folder.getUrl(),
+          sheetName: sheetName,
+          folderName: folderName
+        }
+      };
+    } catch (error) {
+      Logger.log('Error in autoSetup: ' + error.toString());
+      return { ok: false, error: error.toString() };
+    }
+  },
+
+  /**
+   * Create sample data for testing
+   */
+  createSampleData: function(sheet) {
+    try {
+      const now = new Date().toISOString();
+      const userEmail = this.getCurrentUserEmail();
+
+      // Sample documents
+      const sampleDocs = [
+        {
+          id: Utilities.getUuid(),
+          title: 'บัตรประชาชน',
+          category: 'บัตรประชาชน',
+          tags: 'สำคัญ, ต้องต่ออายุ',
+          owner: userEmail,
+          issueDate: '2020-01-15',
+          expiryDate: '2027-01-14',
+          remindDays: 180,
+          driveFileId: '',
+          driveFileUrl: '',
+          version: '1',
+          location: 'กระเป๋าสตางค์',
+          source: 'กรมการปกครอง',
+          status: 'active',
+          notes: 'บัตรประชาชนฉบับปัจจุบัน',
+          createdAt: now,
+          updatedAt: now
+        },
+        {
+          id: Utilities.getUuid(),
+          title: 'พาสปอร์ต',
+          category: 'พาสปอร์ต',
+          tags: 'เดินทาง, ระหว่างประเทศ',
+          owner: userEmail,
+          issueDate: '2023-06-20',
+          expiryDate: '2033-06-19',
+          remindDays: 365,
+          driveFileId: '',
+          driveFileUrl: '',
+          version: '1',
+          location: 'ลิ้นชักที่ 1',
+          source: 'กรมการกงสุล',
+          status: 'active',
+          notes: 'พาสปอร์ตเล่มใหม่ ยังใช้งานได้อีกนาน',
+          createdAt: now,
+          updatedAt: now
+        },
+        {
+          id: Utilities.getUuid(),
+          title: 'ใบขับขี่รถยนต์',
+          category: 'ใบขับขี่',
+          tags: 'ขับรถ, ใกล้หมดอายุ',
+          owner: userEmail,
+          issueDate: '2020-03-10',
+          expiryDate: '2025-03-09',
+          remindDays: 30,
+          driveFileId: '',
+          driveFileUrl: '',
+          version: '1',
+          location: 'กระเป๋าสตางค์',
+          source: 'กรมการขนส่งทางบก',
+          status: 'active',
+          notes: 'ใบขับขี่กำลังจะหมดอายุ ต้องรีบไปต่ออายุ',
+          createdAt: now,
+          updatedAt: now
+        }
+      ];
+
+      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+
+      sampleDocs.forEach(doc => {
+        const rowData = headers.map(header => doc[header] || '');
+        sheet.appendRow(rowData);
+      });
+
+      Logger.log('Sample data created: ' + sampleDocs.length + ' documents');
+    } catch (error) {
+      Logger.log('Error in createSampleData: ' + error.toString());
+      throw error;
+    }
+  },
+
+  // ============================================================
   // HELPERS
   // ============================================================
 

@@ -15,6 +15,20 @@
 function doGet(e) {
   try {
     Logger.log('doGet called at: ' + new Date().toISOString());
+
+    // Check if system is set up
+    const setupCheck = Api.checkSetup();
+
+    if (!setupCheck.ok || !setupCheck.data.isConfigured) {
+      // Show setup wizard if not configured
+      Logger.log('System not configured. Showing setup wizard.');
+      return HtmlService.createHtmlOutputFromFile('Setup')
+        .setTitle('ติดตั้งระบบบันทึกเอกสารส่วนตัว')
+        .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    }
+
+    // Show main app if configured
+    Logger.log('System configured. Showing main app.');
     return HtmlService.createHtmlOutputFromFile('index')
       .setTitle('บันทึกเอกสารส่วนตัว')
       .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
@@ -115,6 +129,14 @@ function doPost(e) {
         break;
       case 'updateConfig':
         result = Api.updateConfig(payload);
+        break;
+
+      // Auto Setup
+      case 'checkSetup':
+        result = Api.checkSetup();
+        break;
+      case 'autoSetup':
+        result = Api.autoSetup(payload);
         break;
 
       default:

@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ติดตั้งระบบบันทึกเอกสารส่วนตัว</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .step {
+      display: none;
+    }
+    .step.active {
+      display: block;
+      animation: fadeIn 0.5s ease-in;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .progress-bar {
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen flex items-center justify-center p-4">
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center">
+    <div class="bg-white rounded-lg p-8 max-w-sm w-full">
+      <div class="flex flex-col items-center">
+        <svg class="animate-spin h-16 w-16 text-blue-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <h3 class="text-xl font-semibold text-gray-900 mb-2">กำลังติดตั้ง...</h3>
+        <p id="loadingText" class="text-gray-600 text-center">กรุณารอสักครู่</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="max-w-2xl w-full bg-white rounded-2xl shadow-2xl overflow-hidden">
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 p-8 text-white">
+      <h1 class="text-3xl font-bold mb-2">📄 ติดตั้งระบบบันทึกเอกสารส่วนตัว</h1>
+      <p class="text-blue-100">ติดตั้งอัตโนมัติ ง่าย รวดเร็ว ใช้เวลาแค่ 2 นาที</p>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="bg-gray-100 h-2">
+      <div id="progressBar" class="progress-bar bg-green-500 h-2" style="width: 0%"></div>
+    </div>
+
+    <!-- Steps Container -->
+    <div class="p-8">
+
+      <!-- Step 1: Welcome -->
+      <div id="step1" class="step active">
+        <div class="text-center mb-8">
+          <div class="inline-flex items-center justify-center w-20 h-20 bg-blue-100 rounded-full mb-4">
+            <span class="text-4xl">🎉</span>
+          </div>
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">ยินดีต้อนรับ!</h2>
+          <p class="text-gray-600 mb-6">
+            ระบบจะสร้าง Google Spreadsheet และ Google Drive Folder ให้อัตโนมัติ<br>
+            คุณไม่ต้องทำอะไรเลย แค่กดปุ่มเดียว!
+          </p>
+        </div>
+
+        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-6">
+          <div class="flex">
+            <div class="flex-shrink-0">
+              <svg class="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+              </svg>
+            </div>
+            <div class="ml-3">
+              <p class="text-sm text-blue-700">
+                <strong>ระบบจะสร้างให้อัตโนมัติ:</strong>
+              </p>
+              <ul class="mt-2 text-sm text-blue-600 list-disc list-inside">
+                <li>Google Spreadsheet สำหรับเก็บข้อมูลเอกสาร</li>
+                <li>Google Drive Folder สำหรับเก็บไฟล์เอกสาร</li>
+                <li>ตั้งค่าระบบให้พร้อมใช้งานทันที</li>
+                <li>ข้อมูลตัวอย่าง 3 รายการ (ถ้าต้องการ)</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <button onclick="setup.nextStep()" class="w-full bg-blue-600 text-white px-6 py-4 rounded-lg hover:bg-blue-700 font-semibold text-lg transition-colors">
+          เริ่มติดตั้ง →
+        </button>
+      </div>
+
+      <!-- Step 2: Configuration -->
+      <div id="step2" class="step">
+        <h2 class="text-2xl font-bold text-gray-900 mb-6">⚙️ ตั้งค่าระบบ</h2>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              ชื่อ Spreadsheet
+              <span class="text-gray-500 font-normal">(ชื่อไฟล์ในGoogle Sheets)</span>
+            </label>
+            <input type="text" id="sheetName" value="บันทึกเอกสารส่วนตัว"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              ชื่อโฟลเดอร์
+              <span class="text-gray-500 font-normal">(ชื่อโฟลเดอร์ใน Google Drive)</span>
+            </label>
+            <input type="text" id="folderName" value="เอกสารส่วนตัว"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          </div>
+
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              รหัสผ่านแอดมิน
+              <span class="text-gray-500 font-normal">(สำหรับจัดการระบบ อย่างน้อย 6 ตัวอักษร)</span>
+            </label>
+            <input type="password" id="adminPass" value="admin123"
+                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          </div>
+
+          <div class="flex items-center">
+            <input type="checkbox" id="createSampleData" checked
+                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+            <label for="createSampleData" class="ml-2 block text-sm text-gray-700">
+              สร้างข้อมูลตัวอย่าง 3 รายการ (แนะนำสำหรับผู้ใช้งานครั้งแรก)
+            </label>
+          </div>
+        </div>
+
+        <div class="mt-8 flex gap-3">
+          <button onclick="setup.prevStep()"
+                  class="flex-1 bg-gray-200 text-gray-700 px-6 py-3 rounded-lg hover:bg-gray-300 font-semibold transition-colors">
+            ← ย้อนกลับ
+          </button>
+          <button onclick="setup.startSetup()"
+                  class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-semibold transition-colors">
+            เริ่มติดตั้ง →
+          </button>
+        </div>
+      </div>
+
+      <!-- Step 3: Success -->
+      <div id="step3" class="step">
+        <div class="text-center">
+          <div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 rounded-full mb-4">
+            <svg class="w-12 h-12 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+          </div>
+          <h2 class="text-2xl font-bold text-gray-900 mb-4">🎉 ติดตั้งสำเร็จ!</h2>
+          <p class="text-gray-600 mb-6">ระบบพร้อมใช้งานแล้ว</p>
+
+          <div id="setupResults" class="bg-gray-50 rounded-lg p-6 mb-6 text-left">
+            <!-- Results will be inserted here -->
+          </div>
+
+          <div class="bg-yellow-50 border-l-4 border-yellow-500 p-4 mb-6 text-left">
+            <div class="flex">
+              <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-yellow-600" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
+                </svg>
+              </div>
+              <div class="ml-3">
+                <p class="text-sm text-yellow-700">
+                  <strong>สำคัญ!</strong> กรุณาบันทึกลิงก์ด้านบนไว้ เพื่อเข้าใช้งานในครั้งถัดไป
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <button onclick="setup.goToApp()"
+                  class="w-full bg-green-600 text-white px-6 py-4 rounded-lg hover:bg-green-700 font-semibold text-lg transition-colors">
+            เข้าสู่ระบบ →
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    const setup = {
+      currentStep: 1,
+      totalSteps: 3,
+      setupData: null,
+
+      init: function() {
+        console.log('Setup wizard initialized');
+        this.updateProgress();
+      },
+
+      nextStep: function() {
+        if (this.currentStep < this.totalSteps) {
+          document.getElementById('step' + this.currentStep).classList.remove('active');
+          this.currentStep++;
+          document.getElementById('step' + this.currentStep).classList.add('active');
+          this.updateProgress();
+        }
+      },
+
+      prevStep: function() {
+        if (this.currentStep > 1) {
+          document.getElementById('step' + this.currentStep).classList.remove('active');
+          this.currentStep--;
+          document.getElementById('step' + this.currentStep).classList.add('active');
+          this.updateProgress();
+        }
+      },
+
+      updateProgress: function() {
+        const progress = (this.currentStep / this.totalSteps) * 100;
+        document.getElementById('progressBar').style.width = progress + '%';
+      },
+
+      showLoading: function(show, text = 'กำลังประมวลผล...') {
+        const overlay = document.getElementById('loadingOverlay');
+        const loadingText = document.getElementById('loadingText');
+
+        if (show) {
+          overlay.classList.remove('hidden');
+          loadingText.textContent = text;
+        } else {
+          overlay.classList.add('hidden');
+        }
+      },
+
+      startSetup: async function() {
+        // Validate inputs
+        const sheetName = document.getElementById('sheetName').value.trim();
+        const folderName = document.getElementById('folderName').value.trim();
+        const adminPass = document.getElementById('adminPass').value;
+        const createSampleData = document.getElementById('createSampleData').checked;
+
+        if (!sheetName) {
+          alert('กรุณาใส่ชื่อ Spreadsheet');
+          return;
+        }
+
+        if (!folderName) {
+          alert('กรุณาใส่ชื่อโฟลเดอร์');
+          return;
+        }
+
+        if (adminPass.length < 6) {
+          alert('รหัสผ่านแอดมินต้องมีอย่างน้อย 6 ตัวอักษร');
+          return;
+        }
+
+        // Start setup process
+        this.showLoading(true, 'กำลังสร้าง Spreadsheet และ Drive Folder...');
+
+        try {
+          const url = window.location.href.split('?')[0];
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'autoSetup',
+              payload: {
+                sheetName: sheetName,
+                folderName: folderName,
+                adminPass: adminPass,
+                createSampleData: createSampleData
+              }
+            })
+          });
+
+          const result = await response.json();
+          console.log('Setup result:', result);
+
+          this.showLoading(false);
+
+          if (result.ok) {
+            this.setupData = result.data;
+            this.showResults(result.data);
+            this.nextStep();
+          } else {
+            alert('เกิดข้อผิดพลาด: ' + result.error);
+          }
+        } catch (error) {
+          this.showLoading(false);
+          alert('เกิดข้อผิดพลาด: ' + error.message);
+          console.error('Setup error:', error);
+        }
+      },
+
+      showResults: function(data) {
+        const resultsDiv = document.getElementById('setupResults');
+        resultsDiv.innerHTML = `
+          <div class="space-y-4">
+            <div>
+              <h4 class="font-semibold text-gray-700 mb-2">✅ Spreadsheet สร้างสำเร็จ</h4>
+              <div class="pl-4">
+                <p class="text-sm text-gray-600">ชื่อ: ${this.escapeHtml(data.sheetName)}</p>
+                <a href="${data.sheetUrl}" target="_blank" class="text-sm text-blue-600 hover:underline break-all">
+                  ${data.sheetUrl}
+                </a>
+              </div>
+            </div>
+
+            <div>
+              <h4 class="font-semibold text-gray-700 mb-2">✅ Drive Folder สร้างสำเร็จ</h4>
+              <div class="pl-4">
+                <p class="text-sm text-gray-600">ชื่อ: ${this.escapeHtml(data.folderName)}</p>
+                <a href="${data.folderUrl}" target="_blank" class="text-sm text-blue-600 hover:underline break-all">
+                  ${data.folderUrl}
+                </a>
+              </div>
+            </div>
+
+            <div class="pt-4 border-t">
+              <p class="text-sm text-gray-600">
+                <strong class="text-green-600">ระบบตั้งค่าเรียบร้อยแล้ว!</strong>
+                กรุณากดปุ่ม "เข้าสู่ระบบ" เพื่อเริ่มใช้งาน
+              </p>
+            </div>
+          </div>
+        `;
+      },
+
+      goToApp: function() {
+        // Reload to go to main app
+        window.location.reload();
+      },
+
+      escapeHtml: function(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+    };
+
+    // Initialize on load
+    document.addEventListener('DOMContentLoaded', () => {
+      setup.init();
+    });
+  </script>
+
+</body>
+</html>
