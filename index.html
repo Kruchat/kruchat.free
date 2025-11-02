@@ -1,827 +1,1268 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ประทับตรา สำเนาถูกต้อง</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: "Poppins", sans-serif;
-        }
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            min-height: 100vh;
-            background: #FFFFFF;
-            padding: 20px;
-        }
-        ::selection {
-            color: #FFFFFF;
-            background: #2E3192;
-        }
-        .wrapper {
-            width: 450px;
-            background: #FFFFFF;
-            border-radius: 12px;
-            padding: 30px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border: 1px solid #E9ECEF;
-        }
-        .wrapper header {
-            color: #2E3192;
-            font-size: 28px;
-            font-weight: 600;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .wrapper form {
-            height: 180px;
-            display: flex;
-            cursor: pointer;
-            margin: 20px 0;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            border-radius: 10px;
-            border: 2px dashed #2E3192;
-            background: #F8F9FA;
-            transition: all 0.3s ease;
-        }
-        .wrapper form:hover {
-            background: #F4F5F7;
-            border-color: #1A237E;
-        }
-        form :where(i, p) {
-            color: #2E3192;
-        }
-        form i {
-            font-size: 50px;
-        }
-        form p {
-            margin-top: 15px;
-            font-size: 16px;
-            color: #555555;
-        }
-        section .row {
-            margin-bottom: 12px;
-            background: #F8F9FA;
-            list-style: none;
-            padding: 15px 20px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: background 0.3s ease;
-        }
-        section .row:hover {
-            background: #F4A261;
-            color: #FFFFFF;
-        }
-        section .row:hover i {
-            color: #FFFFFF;
-        }
-        section .row i {
-            color: #2E3192;
-            font-size: 30px;
-        }
-        section .details span {
-            font-size: 14px;
-            color: #666666;
-        }
-        .progress-area .row .content {
-            width: 100%;
-            margin-left: 15px;
-        }
-        .progress-area .details {
-            display: flex;
-            align-items: center;
-            margin-bottom: 7px;
-            justify-content: space-between;
-        }
-        .progress-area .content .progress-bar {
-            height: 6px;
-            width: 100%;
-            margin-bottom: 4px;
-            background: #E9ECEF;
-            border-radius: 30px;
-        }
-        .content .progress-bar .progress {
-            height: 100%;
-            width: 0%;
-            background: #2E3192;
-            border-radius: inherit;
-            transition: width 0.3s ease;
-        }
-        .uploaded-area {
-            max-height: 232px;
-            overflow-y: scroll;
-        }
-        .uploaded-area.onprogress {
-            max-height: 150px;
-        }
-        .uploaded-area::-webkit-scrollbar {
-            width: 0px;
-        }
-        .uploaded-area .row .content {
-            display: flex;
-            align-items: center;
-        }
-        .uploaded-area .row .details {
-            display: flex;
-            margin-left: 15px;
-            flex-direction: column;
-        }
-        .uploaded-area .row .details .size {
-            color: #777777;
-            font-size: 11px;
-        }
-        .uploaded-area i.fa-check {
-            font-size: 16px;
-            color: #2E3192;
-        }
-        canvas {
-            border: 1px solid #E9ECEF;
-            margin: 20px auto;
-            max-width: 100%;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-        }
-        #position-buttons {
-            margin: 20px 0;
-            display: none;
-            text-align: center;
-        }
-        button {
-            padding: 12px 25px;
-            margin: 5px;
-            cursor: pointer;
-            background-color: #2E3192;
-            color: #FFFFFF;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-        }
-        button:hover {
-            background-color: #1A237E;
-            transform: translateY(-2px);
-        }
-        .stamp {
-            display: none;
-        }
-        .name-input-container {
-            margin: 20px 0;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .name-input-container label {
-            color: #2E3192;
-            font-size: 16px;
-            font-weight: 500;
-            margin-right: 20px;
-        }
-        .name-input-container input[type="text"] {
-            padding: 12px 18px;
-            font-size: 16px;
-            border: 2px solid #2E3192;
-            border-radius: 10px;
-            width: 320px;
-            outline: none;
-            background: #F8F9FA;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-        }
-        .name-input-container input[type="text"]:focus {
-            border-color: #1A237E;
-            box-shadow: 0 0 10px rgba(46, 49, 146, 0.3);
-            background: #FFFFFF;
-        }
-        .underline-option {
-            margin: 15px 0;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .underline-option input[type="checkbox"] {
-            display: none;
-        }
-        .underline-option .checkbox-custom {
-            width: 28px;
-            height: 28px;
-            border: 2px solid #2E3192;
-            border-radius: 6px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            background: #F8F9FA;
-            transition: all 0.3s ease;
-            margin-right: 12px;
-        }
-        .underline-option .checkbox-custom:hover {
-            border-color: #1A237E;
-        }
-        .underline-option input[type="checkbox"]:checked + .checkbox-custom {
-            background: #2E3192;
-            border-color: #1A237E;
-        }
-        .underline-option input[type="checkbox"]:checked + .checkbox-custom::after {
-            content: '\2713';
-            color: #FFFFFF;
-            font-size: 18px;
-        }
-        .underline-option label {
-            color: #2E3192;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        .color-option {
-            margin: 15px 0;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        .color-option label {
-            color: #2E3192;
-            font-size: 16px;
-            font-weight: 500;
-            margin-right: 20px;
-        }
-        .color-option button {
-            padding: 10px 20px;
-            margin: 5px;
-            cursor: pointer;
-            border: none;
-            border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            width: 80px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-        .color-option button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-        }
-        .color-option #color-blue {
-            background-color: #000080;
-            color: #FFFFFF;
-        }
-        .color-option #color-black {
-            background-color: #000000;
-            color: #FFFFFF;
-        }
-        .color-option #color-red {
-            background-color: #FF0000;
-            color: #FFFFFF;
-        }
-        .spacing-option {
-            margin: 15px 0;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .spacing-option label {
-            color: #2E3192;
-            font-size: 16px;
-            font-weight: 500;
-            margin-right: 20px;
-        }
-        .spacing-option input[type="number"] {
-            padding: 8px 12px;
-            font-size: 16px;
-            border: 2px solid #2E3192;
-            border-radius: 8px;
-            width: 80px;
-            outline: none;
-            background: #F8F9FA;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-        }
-        .spacing-option input[type="number"]:focus {
-            border-color: #1A237E;
-            box-shadow: 0 0 8px rgba(46, 49, 146, 0.3);
-            background: #FFFFFF;
-        }
-        .swal2-title {
-            color: #2E3192 !important;
-            font-size: 24px !important;
-            font-weight: 600 !important;
-        }
-        .swal2-html-container {
-            color: #555555 !important;
-            font-size: 16px !important;
-        }
-        .swal2-confirm {
-            background-color: #2E3192 !important;
-            border-radius: 8px !important;
-            font-size: 16px !important;
-            padding: 12px 25px !important;
-            transition: background-color 0.3s ease !important;
-        }
-        .swal2-confirm:hover {
-            background-color: #1A237E !important;
-        }
-        .swal2-cancel {
-            background-color: #F4A261 !important;
-            border-radius: 8px !important;
-            font-size: 16px !important;
-            padding: 12px 25px !important;
-            transition: background-color 0.3s ease !important;
-        }
-        .swal2-cancel:hover {
-            background-color: #E88C3A !important;
-        }
-        .swal2-popup {
-            border-radius: 12px !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-            border: 1px solid #E9ECEF !important;
-        }
-        .swal2-icon {
-            border-color: #2E3192 !important;
-            color: #2E3192 !important;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>บันทึกเอกสารส่วนตัว</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    [x-cloak] { display: none !important; }
+
+    /* Custom styles */
+    .toast {
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    .fade-in {
+      animation: fadeIn 0.3s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Badge colors */
+    .badge-active { @apply bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300; }
+    .badge-archived { @apply bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300; }
+    .badge-expired { @apply bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300; }
+    .badge-expiring { @apply bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300; }
+
+    /* Print styles */
+    @media print {
+      .no-print { display: none !important; }
+      body { background: white; }
+    }
+
+    /* Dark mode */
+    .dark {
+      color-scheme: dark;
+    }
+  </style>
 </head>
-<body>
-    <div class="wrapper">
-        <header>ประทับตรา สำเนาถูกต้อง</header>
-        <form action="#">
-            <input class="file-input" type="file" name="file" accept="image/*,application/pdf" hidden>
-            <i class="fas fa-cloud-upload-alt"></i>
-            <p>Browse File to Upload</p>
-        </form>
-        <section class="progress-area"></section>
-        <section class="uploaded-area"></section>
-    </div>
-    <div class="name-input-container">
-        <label for="custom-name">ชื่อสำหรับประทับตรา:</label>
-        <input type="text" id="custom-name" value="นางสาวชลธิดา เสรีรัตน์วิภาชัย">
-    </div>
-    <div class="underline-option">
-        <input type="checkbox" id="underline" checked>
-        <div class="checkbox-custom" onclick="document.getElementById('underline').click()"></div>
-        <label for="underline">แสดงเส้นสำหรับเซ็นต์ชื่อ</label>
-    </div>
-    <div class="color-option">
-        <label>เลือกสีตัวอักษร:</label>
-        <button id="color-blue" onclick="setStampColor('#000080')">น้ำเงิน</button>
-        <button id="color-black" onclick="setStampColor('#000000')">ดำ</button>
-        <button id="color-red" onclick="setStampColor('#FF0000')">แดง</button>
-    </div>
-    <div class="spacing-option">
-        <label for="line-spacing">ระยะห่างระหว่างบรรทัด (px):</label>
-        <input type="number" id="line-spacing" value="60" min="0" step="1">
-    </div>
-    <div id="position-buttons">
-        <button onclick="setStampPosition('bottom-left')">ล่างซ้าย</button>
-        <button onclick="setStampPosition('bottom-center')">ล่างกลาง</button>
-        <button onclick="setStampPosition('bottom-right')">ล่างขวา</button>
-    </div>
-    <canvas id="canvas"></canvas>
-    <div id="stamp" class="stamp">
-        สำเนาถูกต้อง
-        ____________________
-        (นายชัชวาลย์ ทะสิละ)
-    </div>
+<body class="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        const { jsPDF } = window.jspdf;
-        let currentFileType = '';
-        let imgData = null;
-        let pdfDoc = null;
-        let stampPosition = 'bottom-center';
-        let positionChangeTimeout = null;
-        let stampColor = '#000080'; // ค่าเริ่มต้นเป็นน้ำเงินเข้ม
-        let lineSpacing = 60; // ค่าเริ่มต้นของระยะห่างระหว่างบรรทัด
-        let uploadTimeout = null; // ตัวแปรสำหรับเก็บ timeout
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-xl">
+      <div class="flex items-center space-x-4">
+        <svg class="animate-spin h-8 w-8 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+        <span class="text-lg font-medium text-gray-900 dark:text-white">กำลังโหลด...</span>
+      </div>
+    </div>
+  </div>
 
-        const form = document.querySelector("form"),
-              fileInput = document.querySelector(".file-input"),
-              progressArea = document.querySelector(".progress-area"),
-              uploadedArea = document.querySelector(".uploaded-area"),
-              positionButtons = document.getElementById('position-buttons'),
-              lineSpacingInput = document.getElementById('line-spacing');
+  <!-- Toast Container -->
+  <div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
 
-        form.addEventListener("click", () => {
-            fileInput.click();
+  <!-- Main App Container -->
+  <div id="app" class="min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="bg-white dark:bg-gray-800 shadow-lg no-print">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex">
+            <div class="flex-shrink-0 flex items-center">
+              <h1 class="text-xl font-bold text-gray-900 dark:text-white">📄 บันทึกเอกสารส่วนตัว</h1>
+            </div>
+            <div class="hidden sm:ml-6 sm:flex sm:space-x-4">
+              <button onclick="app.showPage('dashboard')" class="nav-btn px-3 py-2 rounded-md text-sm font-medium">Dashboard</button>
+              <button onclick="app.showPage('list')" class="nav-btn px-3 py-2 rounded-md text-sm font-medium">เอกสารทั้งหมด</button>
+              <button onclick="app.showPage('form', {mode: 'create'})" class="nav-btn px-3 py-2 rounded-md text-sm font-medium">+ เพิ่มเอกสาร</button>
+              <button onclick="app.showPage('settings')" class="nav-btn px-3 py-2 rounded-md text-sm font-medium">⚙️ ตั้งค่า</button>
+            </div>
+          </div>
+          <div class="flex items-center space-x-2">
+            <button onclick="app.toggleDarkMode()" class="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+              <span id="darkModeIcon">🌙</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Page Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+      <!-- Dashboard Page -->
+      <div id="page-dashboard" class="page hidden fade-in">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">Dashboard</h2>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">เอกสารทั้งหมด</p>
+                <p id="stat-total" class="text-3xl font-bold text-gray-900 dark:text-white">-</p>
+              </div>
+              <div class="text-4xl">📁</div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">ใช้งานอยู่</p>
+                <p id="stat-active" class="text-3xl font-bold text-green-600">-</p>
+              </div>
+              <div class="text-4xl">✅</div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">ใกล้หมดอายุ</p>
+                <p id="stat-expiring" class="text-3xl font-bold text-yellow-600">-</p>
+              </div>
+              <div class="text-4xl">⚠️</div>
+            </div>
+          </div>
+
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="text-sm text-gray-600 dark:text-gray-400">หมดอายุแล้ว</p>
+                <p id="stat-expired" class="text-3xl font-bold text-red-600">-</p>
+              </div>
+              <div class="text-4xl">❌</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Documents -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">เอกสารล่าสุด</h3>
+          <div id="recentDocuments" class="space-y-4">
+            <p class="text-gray-500 dark:text-gray-400">กำลังโหลด...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- List Page -->
+      <div id="page-list" class="page hidden fade-in">
+        <div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-white">เอกสารทั้งหมด</h2>
+
+          <div class="flex gap-2">
+            <button onclick="app.listView = 'table'; app.loadDocuments()"
+                    class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+              📋 ตาราง
+            </button>
+            <button onclick="app.listView = 'card'; app.loadDocuments()"
+                    class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+              🔲 การ์ด
+            </button>
+          </div>
+        </div>
+
+        <!-- Search & Filter -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <input type="text" id="searchKeyword" placeholder="ค้นหา (ชื่อ, แท็ก, หมายเหตุ)..."
+                   class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                   onkeyup="if(event.key === 'Enter') app.loadDocuments()">
+
+            <select id="filterCategory"
+                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                    onchange="app.loadDocuments()">
+              <option value="">ทุกหมวดหมู่</option>
+              <option value="บัตรประชาชน">บัตรประชาชน</option>
+              <option value="พาสปอร์ต">พาสปอร์ต</option>
+              <option value="ใบขับขี่">ใบขับขี่</option>
+              <option value="สัญญา">สัญญา</option>
+              <option value="ประกันภัย">ประกันภัย</option>
+              <option value="ใบรับรอง">ใบรับรอง</option>
+              <option value="อื่นๆ">อื่นๆ</option>
+            </select>
+
+            <select id="filterStatus"
+                    class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"
+                    onchange="app.loadDocuments()">
+              <option value="">ทุกสถานะ</option>
+              <option value="active">ใช้งานอยู่</option>
+              <option value="archived">เก็บถาวร</option>
+              <option value="expired">หมดอายุ</option>
+            </select>
+          </div>
+
+          <div class="mt-4 flex gap-2">
+            <button onclick="app.loadDocuments()"
+                    class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+              🔍 ค้นหา
+            </button>
+            <button onclick="app.resetFilters()"
+                    class="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">
+              ล้างตัวกรอง
+            </button>
+          </div>
+        </div>
+
+        <!-- Documents List -->
+        <div id="documentsList" class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <p class="text-gray-500 dark:text-gray-400">กำลังโหลด...</p>
+        </div>
+
+        <!-- Pagination -->
+        <div id="pagination" class="mt-6 flex justify-center">
+          <!-- Pagination buttons will be inserted here -->
+        </div>
+      </div>
+
+      <!-- Form Page -->
+      <div id="page-form" class="page hidden fade-in">
+        <div class="max-w-3xl mx-auto">
+          <h2 id="formTitle" class="text-3xl font-bold text-gray-900 dark:text-white mb-8">เพิ่มเอกสาร</h2>
+
+          <form id="documentForm" class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 space-y-6">
+            <input type="hidden" id="docId">
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">ชื่อเอกสาร *</label>
+              <input type="text" id="docTitle" required
+                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">หมวดหมู่</label>
+                <select id="docCategory"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                  <option value="">เลือกหมวดหมู่</option>
+                  <option value="บัตรประชาชน">บัตรประชาชน</option>
+                  <option value="พาสปอร์ต">พาสปอร์ต</option>
+                  <option value="ใบขับขี่">ใบขับขี่</option>
+                  <option value="สัญญา">สัญญา</option>
+                  <option value="ประกันภัย">ประกันภัย</option>
+                  <option value="ใบรับรอง">ใบรับรอง</option>
+                  <option value="อื่นๆ">อื่นๆ</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">สถานะ</label>
+                <select id="docStatus"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+                  <option value="active">ใช้งานอยู่</option>
+                  <option value="archived">เก็บถาวร</option>
+                  <option value="expired">หมดอายุ</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">แท็ก (คั่นด้วยเครื่องหมายจุลภาค)</label>
+              <input type="text" id="docTags" placeholder="เช่น: สำคัญ, ต้องต่ออายุ, ส่วนตัว"
+                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">วันที่ออก</label>
+                <input type="date" id="docIssueDate"
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">วันหมดอายุ</label>
+                <input type="date" id="docExpiryDate"
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">แจ้งเตือนก่อนหมดอายุ (วัน)</label>
+              <input type="number" id="docRemindDays" value="7" min="0"
+                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">เจ้าของ</label>
+                <input type="text" id="docOwner"
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">ที่เก็บเอกสาร</label>
+                <input type="text" id="docLocation" placeholder="เช่น: ลิ้นชักที่ 1"
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">แหล่งที่มา</label>
+                <input type="text" id="docSource" placeholder="เช่น: กรมการปกครอง"
+                       class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">เวอร์ชัน</label>
+              <input type="text" id="docVersion" value="1"
+                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">หมายเหตุ</label>
+              <textarea id="docNotes" rows="4" placeholder="หมายเหตุเพิ่มเติม..."
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white"></textarea>
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">แนบไฟล์</label>
+              <div class="mt-2 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-gray-600 border-dashed rounded-md hover:border-blue-500 transition-colors"
+                   ondrop="app.handleFileDrop(event)" ondragover="event.preventDefault()" ondragenter="event.preventDefault()">
+                <div class="space-y-1 text-center">
+                  <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                    <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                  </svg>
+                  <div class="flex text-sm text-gray-600 dark:text-gray-400">
+                    <label for="fileUpload" class="relative cursor-pointer bg-white dark:bg-gray-700 rounded-md font-medium text-blue-600 hover:text-blue-500">
+                      <span>อัปโหลดไฟล์</span>
+                      <input id="fileUpload" name="file-upload" type="file" class="sr-only" onchange="app.handleFileSelect(event)" accept="image/*,.pdf,.doc,.docx,.xls,.xlsx">
+                    </label>
+                    <p class="pl-1">หรือลากไฟล์มาวาง</p>
+                  </div>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">PNG, JPG, PDF, DOC, XLS ไฟล์ไม่เกิน 10MB</p>
+                </div>
+              </div>
+              <div id="uploadedFileInfo" class="mt-2"></div>
+            </div>
+
+            <div class="flex gap-4">
+              <button type="submit" class="flex-1 bg-blue-600 text-white px-6 py-3 rounded-md hover:bg-blue-700 font-medium">
+                💾 บันทึก
+              </button>
+              <button type="button" onclick="app.showPage('list')"
+                      class="flex-1 bg-gray-600 text-white px-6 py-3 rounded-md hover:bg-gray-700 font-medium">
+                ยกเลิก
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Detail Page -->
+      <div id="page-detail" class="page hidden fade-in">
+        <div class="max-w-4xl mx-auto">
+          <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            <div class="flex justify-between items-start mb-6">
+              <h2 id="detailTitle" class="text-3xl font-bold text-gray-900 dark:text-white">รายละเอียดเอกสาร</h2>
+              <div class="flex gap-2">
+                <button onclick="app.editDocument()" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">✏️ แก้ไข</button>
+                <button onclick="app.deleteDocumentConfirm()" class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">🗑️ ลบ</button>
+                <button onclick="app.showPage('list')" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700">← กลับ</button>
+              </div>
+            </div>
+
+            <div id="detailContent" class="space-y-4">
+              <!-- Content will be populated by JavaScript -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings Page -->
+      <div id="page-settings" class="page hidden fade-in">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8">⚙️ ตั้งค่า</h2>
+
+        <!-- Configuration -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">การตั้งค่าระบบ</h3>
+
+          <div class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sheet ID</label>
+              <input type="text" id="configSheetId" readonly
+                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 dark:text-white">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Sheet Name</label>
+              <input type="text" id="configSheetName" readonly
+                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 dark:text-white">
+            </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Drive Folder ID</label>
+              <input type="text" id="configDriveFolderId" readonly
+                     class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-gray-100 dark:bg-gray-700 dark:text-white">
+            </div>
+
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              ⚠️ หากต้องการเปลี่ยนค่าเหล่านี้ กรุณาแก้ไขใน Script Properties ของ Apps Script Editor
+            </p>
+          </div>
+        </div>
+
+        <!-- Triggers -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">ตั้งเวลาอัตโนมัติ (Triggers)</h3>
+
+          <div class="space-y-4">
+            <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
+              <div>
+                <p class="font-medium text-gray-900 dark:text-white">🔔 แจ้งเตือนรายวัน</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">ตรวจสอบเอกสารใกล้หมดอายุทุกวันเวลา 08:00 น.</p>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-md">
+              <div>
+                <p class="font-medium text-gray-900 dark:text-white">💾 สำรองข้อมูลรายสัปดาห์</p>
+                <p class="text-sm text-gray-600 dark:text-gray-400">สำรองข้อมูลอัตโนมัติทุกวันอาทิตย์เวลา 02:00 น.</p>
+              </div>
+            </div>
+
+            <div class="flex gap-2">
+              <button onclick="app.createTriggers()" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+                ✅ สร้าง Triggers
+              </button>
+              <button onclick="app.deleteTriggers()" class="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
+                ❌ ลบ Triggers
+              </button>
+              <button onclick="app.listTriggers()" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                📋 ดูรายการ Triggers
+              </button>
+            </div>
+
+            <div id="triggersList" class="mt-4"></div>
+          </div>
+        </div>
+
+        <!-- Export & Backup -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">ส่งออกและสำรองข้อมูล</h3>
+
+          <div class="flex flex-wrap gap-2">
+            <button onclick="app.exportCSV()" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+              📥 Export CSV
+            </button>
+            <button onclick="app.exportJSON()" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+              📥 Export JSON
+            </button>
+            <button onclick="app.backupSheet()" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700">
+              💾 สำรองข้อมูลเดี๋ยวนี้
+            </button>
+          </div>
+        </div>
+
+        <!-- About -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">เกี่ยวกับระบบ</h3>
+          <p class="text-gray-600 dark:text-gray-400">
+            <strong>บันทึกเอกสารส่วนตัว v1.0</strong><br>
+            ระบบจัดการเอกสารส่วนตัวบน Google Apps Script<br>
+            พัฒนาด้วย Google Sheets + Google Drive + Tailwind CSS
+          </p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // ============================================================
+    // APPLICATION STATE
+    // ============================================================
+    const app = {
+      currentPage: 'dashboard',
+      currentDocId: null,
+      listView: 'table',
+      currentPageNum: 1,
+      pageSize: 10,
+      uploadedFile: null,
+      darkMode: false,
+
+      // Initialize app
+      init: function() {
+        console.log('App initializing...');
+        this.loadDarkMode();
+        this.updateNavigation();
+        this.showPage('dashboard');
+        this.testConnection();
+      },
+
+      // Test API connection
+      testConnection: async function() {
+        try {
+          const result = await this.apiCall('ping');
+          if (result.ok) {
+            console.log('✅ API Connection successful:', result);
+            this.showToast('เชื่อมต่อระบบสำเร็จ', 'success');
+          }
+        } catch (error) {
+          console.error('❌ API Connection failed:', error);
+          this.showToast('ไม่สามารถเชื่อมต่อระบบได้', 'error');
+        }
+      },
+
+      // ============================================================
+      // API CALLS
+      // ============================================================
+      apiCall: async function(action, payload = {}) {
+        this.showLoading(true);
+        try {
+          const url = window.location.href.split('?')[0];
+          const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ action, payload })
+          });
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          const result = await response.json();
+          console.log(`API ${action}:`, result);
+
+          if (!result.ok && result.error) {
+            throw new Error(result.error);
+          }
+
+          return result;
+        } catch (error) {
+          console.error(`API Error (${action}):`, error);
+          throw error;
+        } finally {
+          this.showLoading(false);
+        }
+      },
+
+      // ============================================================
+      // PAGE NAVIGATION
+      // ============================================================
+      showPage: function(pageName, options = {}) {
+        // Hide all pages
+        document.querySelectorAll('.page').forEach(page => {
+          page.classList.add('hidden');
         });
 
-        // เพิ่ม event listener สำหรับการเปลี่ยนระยะห่าง
-        lineSpacingInput.addEventListener('input', () => {
-            lineSpacing = parseInt(lineSpacingInput.value) || 60; // อัปเดตค่า lineSpacing
-            const canvas = document.getElementById('canvas');
-            if (currentFileType === 'image' && imgData) {
-                renderImage(imgData);
-            } else if (currentFileType === 'pdf' && pdfDoc) {
-                renderPDF(pdfDoc, 1);
-            }
+        // Show selected page
+        const pageElement = document.getElementById('page-' + pageName);
+        if (pageElement) {
+          pageElement.classList.remove('hidden');
+          this.currentPage = pageName;
+          this.updateNavigation();
+
+          // Load page data
+          switch (pageName) {
+            case 'dashboard':
+              this.loadDashboard();
+              break;
+            case 'list':
+              this.loadDocuments();
+              break;
+            case 'form':
+              this.setupForm(options);
+              break;
+            case 'detail':
+              this.loadDocumentDetail(options.id);
+              break;
+            case 'settings':
+              this.loadSettings();
+              break;
+          }
+        }
+      },
+
+      updateNavigation: function() {
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+          btn.classList.remove('bg-blue-600', 'text-white');
+          btn.classList.add('text-gray-700', 'dark:text-gray-300', 'hover:bg-gray-100', 'dark:hover:bg-gray-700');
         });
 
-        fileInput.onchange = ({target}) => {
-            let files = target.files;
-            if (files.length > 0) {
-                // ล้าง timeout เก่า (ถ้ามี) เพื่อป้องกัน Popup ซ้ำ
-                if (uploadTimeout) {
-                    clearTimeout(uploadTimeout);
-                }
+        const currentBtn = document.querySelector(`.nav-btn[onclick*="${this.currentPage}"]`);
+        if (currentBtn) {
+          currentBtn.classList.add('bg-blue-600', 'text-white');
+          currentBtn.classList.remove('text-gray-700', 'dark:text-gray-300');
+        }
+      },
 
-                positionButtons.style.display = 'none';
-                progressArea.innerHTML = '';
-                uploadedArea.innerHTML = '';
-                Array.from(files).forEach(file => {
-                    let fileName = file.name;
-                    if (fileName.length >= 12) {
-                        let splitName = fileName.split('.');
-                        fileName = splitName[0].substring(0, 13) + "... ." + splitName[1];
-                    }
-                    uploadFile(file, fileName);
-                });
+      // ============================================================
+      // DASHBOARD
+      // ============================================================
+      loadDashboard: async function() {
+        try {
+          const statsResult = await this.apiCall('stats');
+          if (statsResult.ok) {
+            const stats = statsResult.data;
+            document.getElementById('stat-total').textContent = stats.total;
+            document.getElementById('stat-active').textContent = stats.active;
+            document.getElementById('stat-expiring').textContent = stats.expiringSoon;
+            document.getElementById('stat-expired').textContent = stats.expired;
+          }
+
+          // Load recent documents
+          const docsResult = await this.apiCall('list', {
+            sort: { field: 'updatedAt', order: 'desc' },
+            pageSize: 5
+          });
+
+          if (docsResult.ok) {
+            const container = document.getElementById('recentDocuments');
+            if (docsResult.data.documents.length === 0) {
+              container.innerHTML = '<p class="text-gray-500 dark:text-gray-400">ยังไม่มีเอกสาร</p>';
+            } else {
+              container.innerHTML = docsResult.data.documents.map(doc => `
+                <div class="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer"
+                     onclick="app.showPage('detail', {id: '${doc.id}'})">
+                  <div>
+                    <p class="font-medium text-gray-900 dark:text-white">${this.escapeHtml(doc.title)}</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">${doc.category || '-'} • ${this.formatDate(doc.updatedAt)}</p>
+                  </div>
+                  <span class="badge-${doc.status} px-3 py-1 rounded-full text-sm">${this.getStatusText(doc.status)}</span>
+                </div>
+              `).join('');
             }
+          }
+        } catch (error) {
+          this.showToast('ไม่สามารถโหลดข้อมูลได้: ' + error.message, 'error');
+        }
+      },
+
+      // ============================================================
+      // DOCUMENT LIST
+      // ============================================================
+      loadDocuments: async function(page = 1) {
+        try {
+          const keyword = document.getElementById('searchKeyword').value;
+          const category = document.getElementById('filterCategory').value;
+          const status = document.getElementById('filterStatus').value;
+
+          const payload = {
+            filter: {},
+            sort: { field: 'updatedAt', order: 'desc' },
+            page: page,
+            pageSize: this.pageSize
+          };
+
+          if (keyword) payload.filter.keyword = keyword;
+          if (category) payload.filter.category = category;
+          if (status) payload.filter.status = status;
+
+          const result = await this.apiCall('list', payload);
+
+          if (result.ok) {
+            this.renderDocumentsList(result.data);
+          }
+        } catch (error) {
+          this.showToast('ไม่สามารถโหลดเอกสารได้: ' + error.message, 'error');
+        }
+      },
+
+      renderDocumentsList: function(data) {
+        const container = document.getElementById('documentsList');
+        const documents = data.documents;
+        const pagination = data.pagination;
+
+        if (documents.length === 0) {
+          container.innerHTML = '<p class="text-gray-500 dark:text-gray-400 text-center py-8">ไม่พบเอกสาร</p>';
+          document.getElementById('pagination').innerHTML = '';
+          return;
+        }
+
+        if (this.listView === 'table') {
+          container.innerHTML = `
+            <div class="overflow-x-auto">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead class="bg-gray-50 dark:bg-gray-700">
+                  <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">ชื่อเอกสาร</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">หมวดหมู่</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">สถานะ</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">วันหมดอายุ</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">จัดการ</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                  ${documents.map(doc => `
+                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm font-medium text-gray-900 dark:text-white">${this.escapeHtml(doc.title)}</div>
+                        <div class="text-sm text-gray-500 dark:text-gray-400">${doc.tags || ''}</div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${doc.category || '-'}</td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="badge-${doc.status} px-2 py-1 rounded-full text-xs">${this.getStatusText(doc.status)}</span>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${this.formatDate(doc.expiryDate)}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                        <button onclick="app.showPage('detail', {id: '${doc.id}'})" class="text-blue-600 hover:text-blue-900">ดู</button>
+                        <button onclick="app.editDocument('${doc.id}')" class="text-green-600 hover:text-green-900">แก้ไข</button>
+                        <button onclick="app.archiveDocument('${doc.id}')" class="text-gray-600 hover:text-gray-900">เก็บถาวร</button>
+                      </td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `;
+        } else {
+          // Card view
+          container.innerHTML = `
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              ${documents.map(doc => `
+                <div class="bg-white dark:bg-gray-700 rounded-lg shadow p-6 hover:shadow-lg transition-shadow cursor-pointer"
+                     onclick="app.showPage('detail', {id: '${doc.id}'})">
+                  <div class="flex justify-between items-start mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">${this.escapeHtml(doc.title)}</h3>
+                    <span class="badge-${doc.status} px-2 py-1 rounded-full text-xs">${this.getStatusText(doc.status)}</span>
+                  </div>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">📁 ${doc.category || '-'}</p>
+                  <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">📅 หมดอายุ: ${this.formatDate(doc.expiryDate)}</p>
+                  ${doc.tags ? `<p class="text-xs text-gray-500 dark:text-gray-500 mb-4">🏷️ ${doc.tags}</p>` : ''}
+                  <div class="flex gap-2 mt-4">
+                    <button onclick="event.stopPropagation(); app.editDocument('${doc.id}')" class="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">แก้ไข</button>
+                    <button onclick="event.stopPropagation(); app.archiveDocument('${doc.id}')" class="flex-1 px-3 py-2 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-700">เก็บถาวร</button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+
+        // Render pagination
+        this.renderPagination(pagination);
+      },
+
+      renderPagination: function(pagination) {
+        const container = document.getElementById('pagination');
+        const { page, totalPages } = pagination;
+
+        if (totalPages <= 1) {
+          container.innerHTML = '';
+          return;
+        }
+
+        let html = '<div class="flex gap-2">';
+
+        // Previous button
+        if (page > 1) {
+          html += `<button onclick="app.loadDocuments(${page - 1})" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">← ก่อนหน้า</button>`;
+        }
+
+        // Page numbers
+        for (let i = 1; i <= totalPages; i++) {
+          if (i === page) {
+            html += `<button class="px-4 py-2 bg-blue-600 text-white rounded-md">${i}</button>`;
+          } else if (i === 1 || i === totalPages || (i >= page - 2 && i <= page + 2)) {
+            html += `<button onclick="app.loadDocuments(${i})" class="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white rounded-md hover:bg-gray-300 dark:hover:bg-gray-600">${i}</button>`;
+          } else if (i === page - 3 || i === page + 3) {
+            html += `<span class="px-2 py-2 text-gray-500">...</span>`;
+          }
+        }
+
+        // Next button
+        if (page < totalPages) {
+          html += `<button onclick="app.loadDocuments(${page + 1})" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">ถัดไป →</button>`;
+        }
+
+        html += '</div>';
+        container.innerHTML = html;
+      },
+
+      resetFilters: function() {
+        document.getElementById('searchKeyword').value = '';
+        document.getElementById('filterCategory').value = '';
+        document.getElementById('filterStatus').value = '';
+        this.loadDocuments();
+      },
+
+      // ============================================================
+      // DOCUMENT FORM
+      // ============================================================
+      setupForm: function(options) {
+        const mode = options.mode || 'create';
+        const docId = options.id || null;
+
+        if (mode === 'create') {
+          document.getElementById('formTitle').textContent = 'เพิ่มเอกสาร';
+          document.getElementById('documentForm').reset();
+          document.getElementById('docId').value = '';
+          this.uploadedFile = null;
+          document.getElementById('uploadedFileInfo').innerHTML = '';
+        } else if (mode === 'edit' && docId) {
+          document.getElementById('formTitle').textContent = 'แก้ไขเอกสาร';
+          this.loadDocumentForEdit(docId);
+        }
+
+        // Form submit handler
+        document.getElementById('documentForm').onsubmit = (e) => {
+          e.preventDefault();
+          this.saveDocument();
+        };
+      },
+
+      loadDocumentForEdit: async function(id) {
+        try {
+          const result = await this.apiCall('get', { id });
+          if (result.ok) {
+            const doc = result.data;
+            document.getElementById('docId').value = doc.id;
+            document.getElementById('docTitle').value = doc.title || '';
+            document.getElementById('docCategory').value = doc.category || '';
+            document.getElementById('docStatus').value = doc.status || 'active';
+            document.getElementById('docTags').value = doc.tags || '';
+            document.getElementById('docIssueDate').value = doc.issueDate || '';
+            document.getElementById('docExpiryDate').value = doc.expiryDate || '';
+            document.getElementById('docRemindDays').value = doc.remindDays || 7;
+            document.getElementById('docOwner').value = doc.owner || '';
+            document.getElementById('docLocation').value = doc.location || '';
+            document.getElementById('docSource').value = doc.source || '';
+            document.getElementById('docVersion').value = doc.version || '1';
+            document.getElementById('docNotes').value = doc.notes || '';
+
+            if (doc.driveFileUrl) {
+              document.getElementById('uploadedFileInfo').innerHTML = `
+                <p class="text-sm text-gray-600 dark:text-gray-400">
+                  ไฟล์ปัจจุบัน: <a href="${doc.driveFileUrl}" target="_blank" class="text-blue-600 hover:underline">เปิดไฟล์</a>
+                </p>
+              `;
+            }
+          }
+        } catch (error) {
+          this.showToast('ไม่สามารถโหลดข้อมูลเอกสารได้: ' + error.message, 'error');
+        }
+      },
+
+      saveDocument: async function() {
+        try {
+          const id = document.getElementById('docId').value;
+          const data = {
+            title: document.getElementById('docTitle').value,
+            category: document.getElementById('docCategory').value,
+            status: document.getElementById('docStatus').value,
+            tags: document.getElementById('docTags').value,
+            issueDate: document.getElementById('docIssueDate').value,
+            expiryDate: document.getElementById('docExpiryDate').value,
+            remindDays: parseInt(document.getElementById('docRemindDays').value) || 7,
+            owner: document.getElementById('docOwner').value,
+            location: document.getElementById('docLocation').value,
+            source: document.getElementById('docSource').value,
+            version: document.getElementById('docVersion').value,
+            notes: document.getElementById('docNotes').value
+          };
+
+          // Upload file if exists
+          if (this.uploadedFile) {
+            const uploadResult = await this.apiCall('upload', this.uploadedFile);
+            if (uploadResult.ok) {
+              data.driveFileId = uploadResult.data.driveFileId;
+              data.driveFileUrl = uploadResult.data.driveFileUrl;
+            }
+          }
+
+          // Create or update
+          let result;
+          if (id) {
+            data.id = id;
+            result = await this.apiCall('update', data);
+          } else {
+            result = await this.apiCall('create', data);
+          }
+
+          if (result.ok) {
+            this.showToast(id ? 'บันทึกการแก้ไขเรียบร้อย' : 'เพิ่มเอกสารเรียบร้อย', 'success');
+            this.showPage('list');
+          }
+        } catch (error) {
+          this.showToast('ไม่สามารถบันทึกได้: ' + error.message, 'error');
+        }
+      },
+
+      handleFileSelect: async function(event) {
+        const file = event.target.files[0];
+        if (file) {
+          await this.processFile(file);
+        }
+      },
+
+      handleFileDrop: async function(event) {
+        event.preventDefault();
+        const file = event.dataTransfer.files[0];
+        if (file) {
+          await this.processFile(file);
+        }
+      },
+
+      processFile: async function(file) {
+        // Check file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+          this.showToast('ไฟล์มีขนาดใหญ่เกิน 10MB', 'error');
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const base64Data = e.target.result.split(',')[1];
+          this.uploadedFile = {
+            fileName: file.name,
+            mimeType: file.type,
+            base64Data: base64Data
+          };
+
+          document.getElementById('uploadedFileInfo').innerHTML = `
+            <div class="flex items-center justify-between p-3 bg-green-50 dark:bg-green-900 rounded-md">
+              <span class="text-sm text-green-800 dark:text-green-200">✅ ${file.name} (${this.formatFileSize(file.size)})</span>
+              <button type="button" onclick="app.removeFile()" class="text-red-600 hover:text-red-800">✖</button>
+            </div>
+          `;
+        };
+        reader.readAsDataURL(file);
+      },
+
+      removeFile: function() {
+        this.uploadedFile = null;
+        document.getElementById('uploadedFileInfo').innerHTML = '';
+        document.getElementById('fileUpload').value = '';
+      },
+
+      // ============================================================
+      // DOCUMENT DETAIL
+      // ============================================================
+      loadDocumentDetail: async function(id) {
+        try {
+          this.currentDocId = id;
+          const result = await this.apiCall('get', { id });
+
+          if (result.ok) {
+            const doc = result.data;
+            document.getElementById('detailTitle').textContent = doc.title;
+
+            const content = document.getElementById('detailContent');
+            content.innerHTML = `
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">ข้อมูลพื้นฐาน</h4>
+                  <div class="space-y-2 bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
+                    <p><strong>ID:</strong> ${doc.id}</p>
+                    <p><strong>หมวดหมู่:</strong> ${doc.category || '-'}</p>
+                    <p><strong>สถานะ:</strong> <span class="badge-${doc.status} px-2 py-1 rounded-full text-xs">${this.getStatusText(doc.status)}</span></p>
+                    <p><strong>แท็ก:</strong> ${doc.tags || '-'}</p>
+                    <p><strong>เจ้าของ:</strong> ${doc.owner || '-'}</p>
+                    <p><strong>เวอร์ชัน:</strong> ${doc.version || '1'}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">วันที่</h4>
+                  <div class="space-y-2 bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
+                    <p><strong>วันที่ออก:</strong> ${this.formatDate(doc.issueDate)}</p>
+                    <p><strong>วันหมดอายุ:</strong> ${this.formatDate(doc.expiryDate)}</p>
+                    <p><strong>แจ้งเตือนก่อน:</strong> ${doc.remindDays || 0} วัน</p>
+                    <p><strong>สร้างเมื่อ:</strong> ${this.formatDateTime(doc.createdAt)}</p>
+                    <p><strong>แก้ไขล่าสุด:</strong> ${this.formatDateTime(doc.updatedAt)}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">ที่เก็บและแหล่งที่มา</h4>
+                  <div class="space-y-2 bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
+                    <p><strong>ที่เก็บเอกสาร:</strong> ${doc.location || '-'}</p>
+                    <p><strong>แหล่งที่มา:</strong> ${doc.source || '-'}</p>
+                  </div>
+                </div>
+
+                <div>
+                  <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">ไฟล์</h4>
+                  <div class="space-y-2 bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
+                    ${doc.driveFileUrl ? `
+                      <div class="space-y-2">
+                        <a href="${doc.driveFileUrl}" target="_blank" class="inline-block px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                          📂 เปิดไฟล์ใน Drive
+                        </a>
+                        <button onclick="app.copyToClipboard('${doc.driveFileUrl}')" class="inline-block px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 ml-2">
+                          📋 คัดลอกลิงก์
+                        </button>
+                      </div>
+                    ` : '<p class="text-gray-500 dark:text-gray-400">ไม่มีไฟล์แนบ</p>'}
+                  </div>
+                </div>
+
+                <div class="md:col-span-2">
+                  <h4 class="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">หมายเหตุ</h4>
+                  <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
+                    <p class="whitespace-pre-wrap">${this.escapeHtml(doc.notes) || '-'}</p>
+                  </div>
+                </div>
+              </div>
+            `;
+          }
+        } catch (error) {
+          this.showToast('ไม่สามารถโหลดรายละเอียดได้: ' + error.message, 'error');
+        }
+      },
+
+      editDocument: function(id) {
+        const docId = id || this.currentDocId;
+        this.showPage('form', { mode: 'edit', id: docId });
+      },
+
+      deleteDocumentConfirm: function() {
+        if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบเอกสารนี้? การลบจะไม่สามารถกู้คืนได้')) {
+          this.deleteDocument(this.currentDocId);
+        }
+      },
+
+      deleteDocument: async function(id) {
+        try {
+          const result = await this.apiCall('delete', { id });
+          if (result.ok) {
+            this.showToast('ลบเอกสารเรียบร้อย', 'success');
+            this.showPage('list');
+          }
+        } catch (error) {
+          this.showToast('ไม่สามารถลบได้: ' + error.message, 'error');
+        }
+      },
+
+      archiveDocument: async function(id) {
+        try {
+          const result = await this.apiCall('archive', { id });
+          if (result.ok) {
+            this.showToast('เก็บถาวรเอกสารเรียบร้อย', 'success');
+            this.loadDocuments();
+          }
+        } catch (error) {
+          this.showToast('ไม่สามารถเก็บถาวรได้: ' + error.message, 'error');
+        }
+      },
+
+      // ============================================================
+      // SETTINGS
+      // ============================================================
+      loadSettings: async function() {
+        try {
+          const configResult = await this.apiCall('getConfig');
+          if (configResult.ok) {
+            document.getElementById('configSheetId').value = configResult.data.SHEET_ID;
+            document.getElementById('configSheetName').value = configResult.data.SHEET_NAME;
+            document.getElementById('configDriveFolderId').value = configResult.data.DRIVE_FOLDER_ID;
+          }
+        } catch (error) {
+          this.showToast('ไม่สามารถโหลดการตั้งค่าได้: ' + error.message, 'error');
+        }
+      },
+
+      createTriggers: async function() {
+        try {
+          const result = await this.apiCall('createTriggers');
+          if (result.ok) {
+            this.showToast('สร้าง Triggers เรียบร้อย', 'success');
+            this.listTriggers();
+          }
+        } catch (error) {
+          this.showToast('ไม่สามารถสร้าง Triggers ได้: ' + error.message, 'error');
+        }
+      },
+
+      deleteTriggers: async function() {
+        if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการลบ Triggers ทั้งหมด?')) return;
+
+        try {
+          const result = await this.apiCall('deleteTriggers');
+          if (result.ok) {
+            this.showToast('ลบ Triggers เรียบร้อย', 'success');
+            this.listTriggers();
+          }
+        } catch (error) {
+          this.showToast('ไม่สามารถลบ Triggers ได้: ' + error.message, 'error');
+        }
+      },
+
+      listTriggers: async function() {
+        try {
+          const result = await this.apiCall('listTriggers');
+          const container = document.getElementById('triggersList');
+
+          if (result.ok) {
+            const triggers = result.data.triggers;
+            if (triggers.length === 0) {
+              container.innerHTML = '<p class="text-sm text-gray-600 dark:text-gray-400">ไม่มี Triggers ที่ใช้งานอยู่</p>';
+            } else {
+              container.innerHTML = `
+                <div class="bg-gray-50 dark:bg-gray-700 p-4 rounded-md">
+                  <p class="text-sm font-medium text-gray-900 dark:text-white mb-2">Triggers ที่ใช้งานอยู่: ${triggers.length}</p>
+                  <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1">
+                    ${triggers.map(t => `<li>• ${t.handlerFunction}</li>`).join('')}
+                  </ul>
+                </div>
+              `;
+            }
+          }
+        } catch (error) {
+          this.showToast('ไม่สามารถโหลด Triggers ได้: ' + error.message, 'error');
+        }
+      },
+
+      exportCSV: async function() {
+        try {
+          const result = await this.apiCall('exportCSV');
+          if (result.ok) {
+            this.downloadFile(result.data.csv, result.data.fileName, 'text/csv');
+            this.showToast('Export CSV สำเร็จ', 'success');
+          }
+        } catch (error) {
+          this.showToast('ไม่สามารถ Export CSV ได้: ' + error.message, 'error');
+        }
+      },
+
+      exportJSON: async function() {
+        try {
+          const result = await this.apiCall('exportJSON');
+          if (result.ok) {
+            this.downloadFile(result.data.json, result.data.fileName, 'application/json');
+            this.showToast('Export JSON สำเร็จ', 'success');
+          }
+        } catch (error) {
+          this.showToast('ไม่สามารถ Export JSON ได้: ' + error.message, 'error');
+        }
+      },
+
+      backupSheet: async function() {
+        try {
+          const result = await this.apiCall('backupSheet');
+          if (result.ok) {
+            this.showToast('สำรองข้อมูลเรียบร้อย', 'success');
+            if (result.data.backupUrl) {
+              window.open(result.data.backupUrl, '_blank');
+            }
+          }
+        } catch (error) {
+          this.showToast('ไม่สามารถสำรองข้อมูลได้: ' + error.message, 'error');
+        }
+      },
+
+      // ============================================================
+      // UTILITIES
+      // ============================================================
+      showLoading: function(show) {
+        document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
+      },
+
+      showToast: function(message, type = 'info') {
+        const container = document.getElementById('toastContainer');
+        const colors = {
+          success: 'bg-green-600',
+          error: 'bg-red-600',
+          warning: 'bg-yellow-600',
+          info: 'bg-blue-600'
         };
 
-        function uploadFile(file, name) {
-            const reader = new FileReader();
+        const toast = document.createElement('div');
+        toast.className = `toast ${colors[type]} text-white px-6 py-3 rounded-lg shadow-lg`;
+        toast.textContent = message;
 
-            reader.onprogress = ({loaded, total}) => {
-                let fileLoaded = Math.floor((loaded / total) * 100);
-                let fileTotal = Math.floor(total / 1000);
-                let fileSize = (fileTotal < 1024) ? fileTotal + " KB" : (loaded / (1024*1024)).toFixed(2) + " MB";
-                let progressHTML = `<li class="row">
-                                      <i class="fas fa-file-alt"></i>
-                                      <div class="content">
-                                        <div class="details">
-                                          <span class="name">${name} • Uploading</span>
-                                          <span class="percent">${fileLoaded}%</span>
-                                        </div>
-                                        <div class="progress-bar">
-                                          <div class="progress" style="width: ${fileLoaded}%"></div>
-                                        </div>
-                                      </div>
-                                    </li>`;
-                uploadedArea.classList.add("onprogress");
-                progressArea.innerHTML = progressHTML;
-            };
+        container.appendChild(toast);
 
-            reader.onload = async (e) => {
-                progressArea.innerHTML = "";
-                let fileTotal = Math.floor(file.size / 1000);
-                let fileSize = (fileTotal < 1024) ? fileTotal + " KB" : (file.size / (1024*1024)).toFixed(2) + " MB";
-                let uploadedHTML = `<li class="row">
-                                      <div class="content upload">
-                                        <i class="fas fa-file-alt"></i>
-                                        <div class="details">
-                                          <span class="name">${name} • Uploaded</span>
-                                          <span class="size">${fileSize}</span>
-                                        </div>
-                                      </div>
-                                      <i class="fas fa-check"></i>
-                                    </li>`;
-                uploadedArea.classList.remove("onprogress");
-                uploadedArea.insertAdjacentHTML("afterbegin", uploadedHTML);
+        setTimeout(() => {
+          toast.remove();
+        }, 3000);
+      },
 
-                if (uploadedArea.children.length === 1) {
-                    const canvas = document.getElementById('canvas');
-                    if (file.type.startsWith('image/')) {
-                        currentFileType = 'image';
-                        imgData = e.target.result;
-                        renderImage(imgData);
-                        positionButtons.style.display = 'block';
-                    } else if (file.type === 'application/pdf') {
-                        currentFileType = 'pdf';
-                        const typedArray = new Uint8Array(e.target.result);
-                        try {
-                            pdfDoc = await pdfjsLib.getDocument({ data: typedArray }).promise;
-                            await renderPDF(pdfDoc, 1);
-                            positionButtons.style.display = 'block';
-                        } catch (error) {
-                            console.error("Error loading PDF:", error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'เกิดข้อผิดพลาด',
-                                text: 'ไม่สามารถโหลดไฟล์ PDF ได้',
-                                confirmButtonText: 'ตกลง'
-                            });
-                        }
-                    }
-                    // แสดงตราประทับที่ล่างกลางทันทีหลังอัปโหลด
-                    drawStamp(canvas, null, canvas.width, canvas.height);
+      downloadFile: function(content, fileName, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        a.click();
+        URL.revokeObjectURL(url);
+      },
 
-                    // ตั้งเวลา 10 วินาทีเพื่อแสดง Popup
-                    uploadTimeout = setTimeout(() => {
-                        showSummaryPopup();
-                    }, 10000);
-                }
-            };
+      copyToClipboard: function(text) {
+        navigator.clipboard.writeText(text).then(() => {
+          this.showToast('คัดลอกลิงก์แล้ว', 'success');
+        }).catch(() => {
+          this.showToast('ไม่สามารถคัดลอกได้', 'error');
+        });
+      },
 
-            reader.onerror = () => {
-                console.error("Error reading file");
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถอ่านไฟล์ได้',
-                    confirmButtonText: 'ตกลง'
-                });
-            };
+      toggleDarkMode: function() {
+        this.darkMode = !this.darkMode;
+        document.documentElement.classList.toggle('dark', this.darkMode);
+        document.getElementById('darkModeIcon').textContent = this.darkMode ? '☀️' : '🌙';
+        localStorage.setItem('darkMode', this.darkMode);
+      },
 
-            if (file.type.startsWith('image/')) {
-                reader.readAsDataURL(file);
-            } else if (file.type === 'application/pdf') {
-                reader.readAsArrayBuffer(file);
-            }
+      loadDarkMode: function() {
+        this.darkMode = localStorage.getItem('darkMode') === 'true';
+        document.documentElement.classList.toggle('dark', this.darkMode);
+        document.getElementById('darkModeIcon').textContent = this.darkMode ? '☀️' : '🌙';
+      },
+
+      escapeHtml: function(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      },
+
+      formatDate: function(dateStr) {
+        if (!dateStr) return '-';
+        try {
+          const date = new Date(dateStr);
+          return date.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+        } catch {
+          return dateStr;
         }
+      },
 
-        function showSummaryPopup() {
-            const customName = document.getElementById('custom-name').value || "นางสาวชลธิดา เสรีรัตน์วิภาชัย";
-            const showUnderline = document.getElementById('underline').checked;
-            const colorName = getColorName(stampColor);
-            const positionText = getPositionText(stampPosition);
-
-            Swal.fire({
-                title: 'สรุปการตั้งค่า',
-                html: `
-                    <div style="text-align: left; font-size: 16px;">
-                        <p><strong>ชื่อ:</strong> ${customName}</p>
-                        <p><strong>สีตัวอักษร:</strong> ${colorName}</p>
-                        <p><strong>ระยะห่างระหว่างบรรทัด:</strong> ${lineSpacing} px</p>
-                        <p><strong>ตำแหน่งตราประทับ:</strong> ${positionText}</p>
-                        <p><strong>แสดงเส้นสำหรับเซ็นต์ชื่อ:</strong> ${showUnderline ? 'ใช่' : 'ไม่'}</p>
-                    </div>
-                `,
-                icon: 'info',
-                showCancelButton: true,
-                confirmButtonText: 'ยืนยัน',
-                cancelButtonText: 'ยกเลิก',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    downloadFile();
-                }
-            });
+      formatDateTime: function(dateStr) {
+        if (!dateStr) return '-';
+        try {
+          const date = new Date(dateStr);
+          return date.toLocaleString('th-TH', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          });
+        } catch {
+          return dateStr;
         }
+      },
 
-        function getColorName(color) {
-            switch (color) {
-                case '#000080': return 'น้ำเงิน';
-                case '#000000': return 'ดำ';
-                case '#FF0000': return 'แดง';
-                default: return 'ไม่ระบุ';
-            }
-        }
+      formatFileSize: function(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+      },
 
-        function renderImage(imgData) {
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
-            img.onload = function() {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-                drawStamp(canvas, null, canvas.width, canvas.height); // อัปเดตตราประทับทันที
-            };
-            img.onerror = function() {
-                console.error("Error loading image");
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถโหลดภาพได้',
-                    confirmButtonText: 'ตกลง'
-                });
-            };
-            img.src = imgData;
-        }
+      getStatusText: function(status) {
+        const statusMap = {
+          'active': 'ใช้งานอยู่',
+          'archived': 'เก็บถาวร',
+          'expired': 'หมดอายุ'
+        };
+        return statusMap[status] || status;
+      }
+    };
 
-        async function renderPDF(pdfDoc, pageNum) {
-            try {
-                const page = await pdfDoc.getPage(pageNum);
-                const viewport = page.getViewport({ scale: 2.0 });
-                const canvas = document.getElementById('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-                const renderContext = {
-                    canvasContext: ctx,
-                    viewport: viewport
-                };
-                await page.render(renderContext).promise;
-                drawStamp(canvas, null, canvas.width, canvas.height); // อัปเดตตราประทับทันที
-            } catch (error) {
-                console.error("Error rendering PDF:", error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถแสดง PDF ได้',
-                    confirmButtonText: 'ตกลง'
-                });
-            }
-        }
+    // Initialize app when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+      app.init();
+    });
+  </script>
 
-        function setStampPosition(position) {
-            if (positionChangeTimeout) {
-                clearTimeout(positionChangeTimeout);
-            }
-
-            stampPosition = position;
-            const canvas = document.getElementById('canvas');
-
-            if (currentFileType === 'image' && imgData) {
-                renderImage(imgData);
-            } else if (currentFileType === 'pdf' && pdfDoc) {
-                renderPDF(pdfDoc, 1);
-            } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'คำเตือน',
-                    text: 'กรุณารอให้ไฟล์โหลดเสร็จสมบูรณ์ก่อนดำเนินการ',
-                    confirmButtonText: 'ตกลง'
-                });
-                return;
-            }
-
-            positionChangeTimeout = setTimeout(() => {
-                Swal.fire({
-                    title: 'ยืนยันตำแหน่งตราประทับ',
-                    text: `คุณเลือกตำแหน่ง "${getPositionText(position)}" ต้องการยืนยันหรือไม่?`,
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'ยืนยัน',
-                    cancelButtonText: 'ยกเลิก',
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        downloadFile();
-                    } else {
-                        stampPosition = 'bottom-center';
-                        if (currentFileType === 'image' && imgData) {
-                            renderImage(imgData);
-                        } else if (currentFileType === 'pdf' && pdfDoc) {
-                            renderPDF(pdfDoc, 1);
-                        }
-                    }
-                });
-            }, 5000);
-        }
-
-        function getPositionText(position) {
-            switch (position) {
-                case 'bottom-left': return 'ล่างซ้าย';
-                case 'bottom-center': return 'ล่างกลาง';
-                case 'bottom-right': return 'ล่างขวา';
-                default: return '';
-            }
-        }
-
-        function drawStamp(canvas, callback, pageWidth, pageHeight) {
-            const ctx = canvas.getContext('2d');
-            ctx.font = 'bold 32px Arial';
-            ctx.fillStyle = stampColor; // ใช้สีจาก stampColor
-
-            const customName = document.getElementById('custom-name').value || "นางสาวชลธิดา เสรีรัตน์วิภาชัย";
-            const showUnderline = document.getElementById('underline').checked;
-
-            let stampText = "สำเนาถูกต้อง\n";
-            if (showUnderline) {
-                stampText += "____________________\n";
-            }
-            stampText += `(${customName})`;
-
-            const lines = stampText.split('\n');
-            const lineHeight = lineSpacing; // ใช้ค่า lineSpacing ที่ผู้ใช้กำหนด
-
-            let x, y;
-            const maxWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
-
-            if (stampPosition === 'bottom-left') {
-                x = 40;
-                y = pageHeight - (lines.length * lineHeight) - 40;
-            } else if (stampPosition === 'bottom-center') {
-                x = (pageWidth - maxWidth) / 2;
-                y = pageHeight - (lines.length * lineHeight) - 40;
-            } else if (stampPosition === 'bottom-right') {
-                x = pageWidth - maxWidth - 40;
-                y = pageHeight - (lines.length * lineHeight) - 40;
-            }
-
-            lines.forEach((line, index) => {
-                const lineWidth = ctx.measureText(line).width;
-                const offsetX = (maxWidth - lineWidth) / 2;
-                ctx.fillText(line, x + offsetX, y + (index * lineHeight));
-            });
-
-            if (callback) callback();
-        }
-
-        function setStampColor(color) {
-            stampColor = color;
-            const canvas = document.getElementById('canvas');
-            if (currentFileType === 'image' && imgData) {
-                renderImage(imgData);
-            } else if (currentFileType === 'pdf' && pdfDoc) {
-                renderPDF(pdfDoc, 1);
-            }
-        }
-
-        async function downloadFile() {
-            const canvas = document.getElementById('canvas');
-            if (currentFileType === 'image') {
-                const link = document.createElement('a');
-                link.download = 'stamped_image.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'ดาวน์โหลดสำเร็จ',
-                    text: 'ไฟล์ภาพของคุณได้ถูกดาวน์โหลดแล้ว!',
-                    confirmButtonText: 'ตกลง',
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-            } else if (currentFileType === 'pdf' && pdfDoc) {
-                try {
-                    const numPages = pdfDoc.numPages;
-                    let pdf = null;
-
-                    for (let i = 1; i <= numPages; i++) {
-                        const page = await pdfDoc.getPage(i);
-                        const viewport = page.getViewport({ scale: 2.0 });
-                        const originalViewport = page.getViewport({ scale: 1.0 });
-
-                        canvas.width = viewport.width;
-                        canvas.height = viewport.height;
-                        const ctx = canvas.getContext('2d');
-                        const renderContext = {
-                            canvasContext: ctx,
-                            viewport: viewport
-                        };
-                        await page.render(renderContext).promise;
-
-                        drawStamp(canvas, null, viewport.width, viewport.height);
-
-                        const pageWidth = originalViewport.width / 72 * 25.4;
-                        const pageHeight = originalViewport.height / 72 * 25.4;
-
-                        if (i === 1) {
-                            pdf = new jsPDF({
-                                orientation: pageWidth > pageHeight ? 'landscape' : 'portrait',
-                                unit: 'mm',
-                                format: [pageWidth, pageHeight]
-                            });
-                        } else {
-                            pdf.addPage([pageWidth, pageHeight], pageWidth > pageHeight ? 'landscape' : 'portrait');
-                        }
-
-                        const imgData = canvas.toDataURL('image/png', 1.0);
-                        pdf.setPage(i);
-                        pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight, null, 'SLOW');
-                    }
-
-                    pdf.save('stamped_pdf.pdf');
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'ดาวน์โหลดสำเร็จ',
-                        text: 'ไฟล์ PDF ของคุณได้ถูกดาวน์โหลดแล้ว!',
-                        confirmButtonText: 'ตกลง',
-                        timer: 3000,
-                        timerProgressBar: true
-                    });
-                } catch (error) {
-                    console.error("Error downloading PDF:", error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'เกิดข้อผิดพลาด',
-                        text: 'ไม่สามารถดาวน์โหลด PDF ได้',
-                        confirmButtonText: 'ตกลง'
-                    });
-                }
-            } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'คำเตือน',
-                    text: 'กรุณารอให้ไฟล์ PDF โหลดเสร็จสมบูรณ์ก่อนดำเนินการ',
-                    confirmButtonText: 'ตกลง'
-                });
-            }
-        }
-    </script>
 </body>
 </html>

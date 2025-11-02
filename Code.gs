@@ -1,0 +1,176 @@
+/**
+ * บันทึกเอกสารส่วนตัว - Personal Document Tracker
+ * Code.gs - Entry Point
+ *
+ * รองรับ: doGet (แสดง Web App), doPost (API JSON)
+ */
+
+// ============================================================
+// ENTRY POINTS
+// ============================================================
+
+/**
+ * doGet - Serve Web App HTML
+ */
+function doGet(e) {
+  try {
+    Logger.log('doGet called at: ' + new Date().toISOString());
+    return HtmlService.createHtmlOutputFromFile('index')
+      .setTitle('บันทึกเอกสารส่วนตัว')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  } catch (error) {
+    Logger.log('Error in doGet: ' + error.toString());
+    return HtmlService.createHtmlOutput('<h1>Error loading app</h1><p>' + error.toString() + '</p>');
+  }
+}
+
+/**
+ * doPost - API Endpoint (รับ/ส่ง JSON)
+ * Request: { action, payload }
+ * Response: { ok, data, error }
+ */
+function doPost(e) {
+  const startTime = new Date();
+  let action = 'unknown';
+
+  try {
+    // Parse request
+    const requestData = JSON.parse(e.postData.contents);
+    action = requestData.action || 'unknown';
+    const payload = requestData.payload || {};
+
+    Logger.log(`[API] Action: ${action}, Payload: ${JSON.stringify(payload).substring(0, 200)}`);
+
+    // Route to appropriate handler
+    let result;
+    switch (action) {
+      // Health check
+      case 'ping':
+        result = { ok: true, message: 'pong', timestamp: new Date().toISOString() };
+        break;
+
+      // Document CRUD
+      case 'list':
+        result = Api.listDocuments(payload);
+        break;
+      case 'get':
+        result = Api.getDocument(payload.id);
+        break;
+      case 'create':
+        result = Api.createDocument(payload);
+        break;
+      case 'update':
+        result = Api.updateDocument(payload.id, payload);
+        break;
+      case 'archive':
+        result = Api.archiveDocument(payload.id);
+        break;
+      case 'delete':
+        result = Api.deleteDocument(payload.id);
+        break;
+
+      // File upload
+      case 'upload':
+        result = Api.uploadFile(payload);
+        break;
+
+      // Statistics
+      case 'stats':
+        result = Api.getStats();
+        break;
+
+      // Export
+      case 'exportCSV':
+        result = Api.exportCSV();
+        break;
+      case 'exportJSON':
+        result = Api.exportJSON();
+        break;
+
+      // Backup
+      case 'backupSheet':
+        result = Api.backupSheet();
+        break;
+
+      // Trigger management
+      case 'createTriggers':
+        result = TriggerManager.createAllTriggers();
+        break;
+      case 'deleteTriggers':
+        result = TriggerManager.deleteAllTriggers();
+        break;
+      case 'listTriggers':
+        result = TriggerManager.listTriggers();
+        break;
+
+      // Admin
+      case 'verifyPassword':
+        result = Api.verifyAdminPassword(payload.password);
+        break;
+      case 'updatePassword':
+        result = Api.updateAdminPassword(payload.oldPassword, payload.newPassword);
+        break;
+      case 'getConfig':
+        result = Api.getConfig();
+        break;
+      case 'updateConfig':
+        result = Api.updateConfig(payload);
+        break;
+
+      default:
+        result = { ok: false, error: `Unknown action: ${action}` };
+    }
+
+    const duration = new Date() - startTime;
+    Logger.log(`[API] ${action} completed in ${duration}ms`);
+
+    return ContentService.createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (error) {
+    const duration = new Date() - startTime;
+    Logger.log(`[API ERROR] ${action} failed after ${duration}ms: ${error.toString()}\n${error.stack}`);
+
+    return ContentService.createTextOutput(JSON.stringify({
+      ok: false,
+      error: error.toString(),
+      action: action
+    })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// ============================================================
+// UTILITY FUNCTIONS (callable from frontend via google.script.run)
+// ============================================================
+
+/**
+ * Get current user email
+ */
+function getUserEmail() {
+  try {
+    return Session.getActiveUser().getEmail();
+  } catch (error) {
+    return 'unknown@example.com';
+  }
+}
+
+/**
+ * Test function for debugging
+ */
+function testApi() {
+  // Test ping
+  const pingResult = doPost({
+    postData: {
+      contents: JSON.stringify({ action: 'ping' })
+    }
+  });
+  Logger.log('Ping result: ' + pingResult.getContent());
+
+  // Test stats
+  const statsResult = doPost({
+    postData: {
+      contents: JSON.stringify({ action: 'stats' })
+    }
+  });
+  Logger.log('Stats result: ' + statsResult.getContent());
+}
