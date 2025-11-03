@@ -516,34 +516,29 @@
       // ============================================================
       // API CALLS
       // ============================================================
-      apiCall: async function(action, payload = {}) {
-        this.showLoading(true);
-        try {
-          const url = window.location.href.split('?')[0];
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action, payload })
-          });
+      apiCall: function(action, payload = {}) {
+        const self = this;
+        self.showLoading(true);
 
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
+        return new Promise((resolve, reject) => {
+          google.script.run
+            .withSuccessHandler(function(result) {
+              self.showLoading(false);
+              console.log(`API ${action}:`, result);
 
-          const result = await response.json();
-          console.log(`API ${action}:`, result);
-
-          if (!result.ok && result.error) {
-            throw new Error(result.error);
-          }
-
-          return result;
-        } catch (error) {
-          console.error(`API Error (${action}):`, error);
-          throw error;
-        } finally {
-          this.showLoading(false);
-        }
+              if (!result.ok && result.error) {
+                reject(new Error(result.error));
+              } else {
+                resolve(result);
+              }
+            })
+            .withFailureHandler(function(error) {
+              self.showLoading(false);
+              console.error(`API Error (${action}):`, error);
+              reject(error);
+            })
+            .runApi(action, payload);
+        });
       },
 
       // ============================================================

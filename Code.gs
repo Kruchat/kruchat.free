@@ -191,6 +191,114 @@ function runCheckSetup() {
 }
 
 /**
+ * Universal API wrapper (callable from google.script.run)
+ * This function routes all API calls from the frontend
+ */
+function runApi(action, payload) {
+  try {
+    Logger.log(`[runApi] Action: ${action}, Payload: ${JSON.stringify(payload).substring(0, 200)}`);
+
+    let result;
+    switch (action) {
+      // Health check
+      case 'ping':
+        result = { ok: true, message: 'pong', timestamp: new Date().toISOString() };
+        break;
+
+      // Document CRUD
+      case 'list':
+        result = Api.listDocuments(payload);
+        break;
+      case 'get':
+        result = Api.getDocument(payload.id);
+        break;
+      case 'create':
+        result = Api.createDocument(payload);
+        break;
+      case 'update':
+        result = Api.updateDocument(payload.id, payload);
+        break;
+      case 'archive':
+        result = Api.archiveDocument(payload.id);
+        break;
+      case 'delete':
+        result = Api.deleteDocument(payload.id);
+        break;
+
+      // File upload
+      case 'upload':
+        result = Api.uploadFile(payload);
+        break;
+
+      // Statistics
+      case 'stats':
+        result = Api.getStats();
+        break;
+
+      // Export
+      case 'exportCSV':
+        result = Api.exportCSV();
+        break;
+      case 'exportJSON':
+        result = Api.exportJSON();
+        break;
+
+      // Backup
+      case 'backupSheet':
+        result = Api.backupSheet();
+        break;
+
+      // Trigger management
+      case 'createTriggers':
+        result = TriggerManager.createAllTriggers();
+        break;
+      case 'deleteTriggers':
+        result = TriggerManager.deleteAllTriggers();
+        break;
+      case 'listTriggers':
+        result = TriggerManager.listTriggers();
+        break;
+
+      // Admin
+      case 'verifyPassword':
+        result = Api.verifyAdminPassword(payload.password);
+        break;
+      case 'updatePassword':
+        result = Api.updateAdminPassword(payload.oldPassword, payload.newPassword);
+        break;
+      case 'getConfig':
+        result = Api.getConfig();
+        break;
+      case 'updateConfig':
+        result = Api.updateConfig(payload);
+        break;
+
+      // Auto Setup
+      case 'checkSetup':
+        result = Api.checkSetup();
+        break;
+      case 'autoSetup':
+        result = Api.autoSetup(payload);
+        break;
+
+      default:
+        result = { ok: false, error: `Unknown action: ${action}` };
+    }
+
+    Logger.log(`[runApi] ${action} completed successfully`);
+    return result;
+
+  } catch (error) {
+    Logger.log(`[runApi ERROR] ${action}: ${error.toString()}\n${error.stack}`);
+    return {
+      ok: false,
+      error: error.toString(),
+      action: action
+    };
+  }
+}
+
+/**
  * Test function for debugging
  */
 function testApi() {
