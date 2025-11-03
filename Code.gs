@@ -196,7 +196,17 @@ function runCheckSetup() {
  */
 function runApi(action, payload) {
   try {
-    Logger.log(`[runApi] Action: ${action}, Payload: ${JSON.stringify(payload).substring(0, 200)}`);
+    // Ensure payload is always an object
+    if (!payload) {
+      payload = {};
+    }
+
+    // Safe logging
+    try {
+      Logger.log(`[runApi] Action: ${action}, Payload: ${JSON.stringify(payload).substring(0, 200)}`);
+    } catch (e) {
+      Logger.log(`[runApi] Action: ${action}, Payload: [could not stringify]`);
+    }
 
     let result;
     switch (action) {
@@ -283,6 +293,12 @@ function runApi(action, payload) {
 
       default:
         result = { ok: false, error: `Unknown action: ${action}` };
+    }
+
+    // Ensure result is never null/undefined
+    if (!result) {
+      Logger.log(`[runApi WARNING] ${action} returned null/undefined, using default error`);
+      result = { ok: false, error: `Action ${action} did not return a result` };
     }
 
     Logger.log(`[runApi] ${action} completed successfully`);
