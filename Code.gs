@@ -191,6 +191,29 @@ function runCheckSetup() {
 }
 
 /**
+ * Test function - Simple test to verify google.script.run works
+ */
+function testSimple() {
+  Logger.log('testSimple called');
+  return { ok: true, message: 'Test successful', timestamp: new Date().toISOString() };
+}
+
+/**
+ * Direct wrapper for listDocuments (for testing)
+ */
+function testListDocuments(payload) {
+  Logger.log('testListDocuments called with: ' + JSON.stringify(payload || {}));
+  try {
+    var result = Api.listDocuments(payload || {});
+    Logger.log('testListDocuments result: ' + JSON.stringify(result).substring(0, 200));
+    return result;
+  } catch (error) {
+    Logger.log('testListDocuments ERROR: ' + error.toString());
+    return { ok: false, error: error.toString() };
+  }
+}
+
+/**
  * Universal API wrapper (callable from google.script.run)
  * This function routes all API calls from the frontend
  */
@@ -231,8 +254,20 @@ function runApi(action, payload) {
           Logger.log('[runApi ERROR] Api.listDocuments is not a function!');
           result = { ok: false, error: 'Api.listDocuments is not a function' };
         } else {
-          result = Api.listDocuments(payload);
-          Logger.log('[runApi] Api.listDocuments returned: ' + (result ? JSON.stringify(result).substring(0, 100) : 'null/undefined'));
+          try {
+            result = Api.listDocuments(payload);
+            Logger.log('[runApi] Api.listDocuments returned type: ' + typeof result);
+            if (result) {
+              Logger.log('[runApi] result.ok = ' + result.ok);
+              Logger.log('[runApi] result preview: ' + JSON.stringify(result).substring(0, 100));
+            } else {
+              Logger.log('[runApi ERROR] Api.listDocuments returned null/undefined!');
+              result = { ok: false, error: 'Api.listDocuments returned null' };
+            }
+          } catch (error) {
+            Logger.log('[runApi ERROR] Exception in Api.listDocuments: ' + error.toString());
+            result = { ok: false, error: 'Exception in listDocuments: ' + error.toString() };
+          }
         }
         break;
       case 'get':

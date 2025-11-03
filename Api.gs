@@ -67,18 +67,22 @@ var Api = {
    * Payload: { filter, sort, page, pageSize }
    */
   listDocuments: function(payload) {
+    Logger.log('[Api.listDocuments] START');
     try {
-      Logger.log('listDocuments called with payload: ' + JSON.stringify(payload || {}).substring(0, 200));
+      Logger.log('[Api.listDocuments] payload: ' + JSON.stringify(payload || {}).substring(0, 200));
 
+      Logger.log('[Api.listDocuments] Getting sheet...');
       const sheet = this.getSheet();
-      Logger.log('Sheet retrieved successfully');
+      Logger.log('[Api.listDocuments] Sheet retrieved successfully');
 
+      Logger.log('[Api.listDocuments] Getting data range...');
       const data = sheet.getDataRange().getValues();
-      Logger.log('Data range retrieved: ' + data.length + ' rows');
+      Logger.log('[Api.listDocuments] Data range retrieved: ' + data.length + ' rows');
 
       const headers = data[0];
       const rows = data.slice(1);
-      Logger.log('Headers: ' + headers.join(', '));
+      Logger.log('[Api.listDocuments] Headers: ' + headers.join(', '));
+      Logger.log('[Api.listDocuments] Processing ' + rows.length + ' data rows');
 
       // Convert to objects
       let documents = rows.map(row => {
@@ -161,6 +165,7 @@ var Api = {
 
       // Calculate totals before pagination
       const total = documents.length;
+      Logger.log('[Api.listDocuments] Total documents after filters: ' + total);
 
       // Apply pagination
       const page = payload.page || 1;
@@ -168,8 +173,9 @@ var Api = {
       const startIndex = (page - 1) * pageSize;
       const endIndex = startIndex + pageSize;
       const paginatedDocs = documents.slice(startIndex, endIndex);
+      Logger.log('[Api.listDocuments] Returning ' + paginatedDocs.length + ' documents (page ' + page + ')');
 
-      return {
+      const result = {
         ok: true,
         data: {
           documents: paginatedDocs,
@@ -181,10 +187,15 @@ var Api = {
           }
         }
       };
+
+      Logger.log('[Api.listDocuments] SUCCESS - returning result');
+      return result;
+
     } catch (error) {
-      Logger.log('Error in listDocuments: ' + error.toString());
-      Logger.log('Error stack: ' + error.stack);
-      return {
+      Logger.log('[Api.listDocuments] ERROR: ' + error.toString());
+      Logger.log('[Api.listDocuments] ERROR stack: ' + error.stack);
+
+      const errorResult = {
         ok: false,
         error: error.toString(),
         data: {
@@ -192,6 +203,9 @@ var Api = {
           pagination: { page: 1, pageSize: 10, total: 0, totalPages: 0 }
         }
       };
+
+      Logger.log('[Api.listDocuments] ERROR - returning error result');
+      return errorResult;
     }
   },
 
