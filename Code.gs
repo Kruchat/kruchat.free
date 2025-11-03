@@ -199,6 +199,38 @@ function testSimple() {
 }
 
 /**
+ * Super simple list test - returns hardcoded data without calling Api at all
+ */
+function apiListDocumentsTest() {
+  Logger.log('[apiListDocumentsTest] Called');
+
+  var hardcodedResult = {
+    ok: true,
+    data: {
+      documents: [
+        {
+          id: 'test-001',
+          title: 'ทดสอบเอกสาร 1',
+          category: 'ทดสอบ',
+          status: 'active',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        }
+      ],
+      pagination: {
+        page: 1,
+        pageSize: 10,
+        total: 1,
+        totalPages: 1
+      }
+    }
+  };
+
+  Logger.log('[apiListDocumentsTest] Returning hardcoded result');
+  return hardcodedResult;
+}
+
+/**
  * Direct wrapper for listDocuments (for testing)
  */
 function testListDocuments(payload) {
@@ -219,13 +251,39 @@ function testListDocuments(payload) {
  */
 
 function apiListDocuments(payload) {
-  Logger.log('[apiListDocuments] Called with: ' + JSON.stringify(payload || {}).substring(0, 100));
+  Logger.log('[apiListDocuments] START - Called with: ' + JSON.stringify(payload || {}).substring(0, 100));
+
+  // First, try to return hardcoded data to test if function returns at all
+  var testResult = {
+    ok: true,
+    data: {
+      documents: [],
+      pagination: { page: 1, pageSize: 10, total: 0, totalPages: 0 }
+    }
+  };
+
+  Logger.log('[apiListDocuments] Test result created: ' + JSON.stringify(testResult));
+
   try {
+    Logger.log('[apiListDocuments] About to call Api.listDocuments...');
     var result = Api.listDocuments(payload || {});
-    Logger.log('[apiListDocuments] Got result, ok=' + (result ? result.ok : 'null'));
-    return result;
+
+    Logger.log('[apiListDocuments] Api.listDocuments returned');
+    Logger.log('[apiListDocuments] Result type: ' + typeof result);
+    Logger.log('[apiListDocuments] Result is null: ' + (result === null));
+    Logger.log('[apiListDocuments] Result is undefined: ' + (result === undefined));
+
+    if (result) {
+      Logger.log('[apiListDocuments] Result.ok = ' + result.ok);
+      Logger.log('[apiListDocuments] Returning actual result');
+      return result;
+    } else {
+      Logger.log('[apiListDocuments] Result is null/undefined, returning test result');
+      return testResult;
+    }
   } catch (error) {
-    Logger.log('[apiListDocuments] ERROR: ' + error.toString());
+    Logger.log('[apiListDocuments] CAUGHT ERROR: ' + error.toString());
+    Logger.log('[apiListDocuments] Error stack: ' + error.stack);
     return {
       ok: false,
       error: error.toString(),

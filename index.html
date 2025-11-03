@@ -551,7 +551,9 @@
               google.script.run.withSuccessHandler(handleSuccess).withFailureHandler(handleFailure).testSimple();
               break;
             case 'list':
-              google.script.run.withSuccessHandler(handleSuccess).withFailureHandler(handleFailure).apiListDocuments(payload);
+              // TEMPORARY: Use test function that returns hardcoded data to verify google.script.run works
+              console.log('[apiCall] Calling apiListDocumentsTest...');
+              google.script.run.withSuccessHandler(handleSuccess).withFailureHandler(handleFailure).apiListDocumentsTest();
               break;
             case 'get':
               google.script.run.withSuccessHandler(handleSuccess).withFailureHandler(handleFailure).runApi(action, payload);
@@ -569,6 +571,7 @@
               google.script.run.withSuccessHandler(handleSuccess).withFailureHandler(handleFailure).apiUploadFile(payload);
               break;
             case 'stats':
+              console.log('[apiCall] Calling apiGetStats...');
               google.script.run.withSuccessHandler(handleSuccess).withFailureHandler(handleFailure).apiGetStats();
               break;
             default:
