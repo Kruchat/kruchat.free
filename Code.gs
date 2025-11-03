@@ -177,6 +177,20 @@ function getUserEmail() {
 }
 
 /**
+ * Wrapper function for Auto Setup (callable from google.script.run)
+ */
+function runAutoSetup(payload) {
+  return Api.autoSetup(payload);
+}
+
+/**
+ * Wrapper function for Check Setup (callable from google.script.run)
+ */
+function runCheckSetup() {
+  return Api.checkSetup();
+}
+
+/**
  * Test function for debugging
  */
 function testApi() {

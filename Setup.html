@@ -234,7 +234,7 @@
         }
       },
 
-      startSetup: async function() {
+      startSetup: function() {
         // Validate inputs
         const sheetName = document.getElementById('sheetName').value.trim();
         const folderName = document.getElementById('folderName').value.trim();
@@ -259,39 +259,33 @@
         // Start setup process
         this.showLoading(true, 'กำลังสร้าง Spreadsheet และ Drive Folder...');
 
-        try {
-          const url = window.location.href.split('?')[0];
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              action: 'autoSetup',
-              payload: {
-                sheetName: sheetName,
-                folderName: folderName,
-                adminPass: adminPass,
-                createSampleData: createSampleData
-              }
-            })
+        const self = this;
+
+        // Use google.script.run API
+        google.script.run
+          .withSuccessHandler(function(result) {
+            console.log('Setup result:', result);
+            self.showLoading(false);
+
+            if (result.ok) {
+              self.setupData = result.data;
+              self.showResults(result.data);
+              self.nextStep();
+            } else {
+              alert('เกิดข้อผิดพลาด: ' + result.error);
+            }
+          })
+          .withFailureHandler(function(error) {
+            self.showLoading(false);
+            alert('เกิดข้อผิดพลาด: ' + error.message);
+            console.error('Setup error:', error);
+          })
+          .runAutoSetup({
+            sheetName: sheetName,
+            folderName: folderName,
+            adminPass: adminPass,
+            createSampleData: createSampleData
           });
-
-          const result = await response.json();
-          console.log('Setup result:', result);
-
-          this.showLoading(false);
-
-          if (result.ok) {
-            this.setupData = result.data;
-            this.showResults(result.data);
-            this.nextStep();
-          } else {
-            alert('เกิดข้อผิดพลาด: ' + result.error);
-          }
-        } catch (error) {
-          this.showLoading(false);
-          alert('เกิดข้อผิดพลาด: ' + error.message);
-          console.error('Setup error:', error);
-        }
       },
 
       showResults: function(data) {
