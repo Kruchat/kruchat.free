@@ -201,6 +201,12 @@ function runApi(action, payload) {
       payload = {};
     }
 
+    // Check if Api object exists
+    if (typeof Api === 'undefined') {
+      Logger.log('[runApi ERROR] Api object is undefined!');
+      return { ok: false, error: 'Api object is not defined' };
+    }
+
     // Safe logging
     try {
       Logger.log(`[runApi] Action: ${action}, Payload: ${JSON.stringify(payload).substring(0, 200)}`);
@@ -218,8 +224,16 @@ function runApi(action, payload) {
       // Document CRUD
       case 'list':
         Logger.log('[runApi] Calling Api.listDocuments...');
-        result = Api.listDocuments(payload);
-        Logger.log('[runApi] Api.listDocuments returned: ' + (result ? JSON.stringify(result).substring(0, 100) : 'null/undefined'));
+        Logger.log('[runApi] Api type: ' + typeof Api);
+        Logger.log('[runApi] Api.listDocuments type: ' + typeof Api.listDocuments);
+
+        if (typeof Api.listDocuments !== 'function') {
+          Logger.log('[runApi ERROR] Api.listDocuments is not a function!');
+          result = { ok: false, error: 'Api.listDocuments is not a function' };
+        } else {
+          result = Api.listDocuments(payload);
+          Logger.log('[runApi] Api.listDocuments returned: ' + (result ? JSON.stringify(result).substring(0, 100) : 'null/undefined'));
+        }
         break;
       case 'get':
         result = Api.getDocument(payload.id);

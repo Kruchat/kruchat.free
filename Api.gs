@@ -7,7 +7,7 @@
  *         createdAt, updatedAt
  */
 
-const Api = {
+var Api = {
 
   // ============================================================
   // CONFIGURATION
