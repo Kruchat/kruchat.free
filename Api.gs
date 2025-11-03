@@ -68,10 +68,17 @@ const Api = {
    */
   listDocuments: function(payload) {
     try {
+      Logger.log('listDocuments called with payload: ' + JSON.stringify(payload || {}).substring(0, 200));
+
       const sheet = this.getSheet();
+      Logger.log('Sheet retrieved successfully');
+
       const data = sheet.getDataRange().getValues();
+      Logger.log('Data range retrieved: ' + data.length + ' rows');
+
       const headers = data[0];
       const rows = data.slice(1);
+      Logger.log('Headers: ' + headers.join(', '));
 
       // Convert to objects
       let documents = rows.map(row => {
@@ -176,7 +183,15 @@ const Api = {
       };
     } catch (error) {
       Logger.log('Error in listDocuments: ' + error.toString());
-      return { ok: false, error: error.toString() };
+      Logger.log('Error stack: ' + error.stack);
+      return {
+        ok: false,
+        error: error.toString(),
+        data: {
+          documents: [],
+          pagination: { page: 1, pageSize: 10, total: 0, totalPages: 0 }
+        }
+      };
     }
   },
 

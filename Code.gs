@@ -217,7 +217,9 @@ function runApi(action, payload) {
 
       // Document CRUD
       case 'list':
+        Logger.log('[runApi] Calling Api.listDocuments...');
         result = Api.listDocuments(payload);
+        Logger.log('[runApi] Api.listDocuments returned: ' + (result ? JSON.stringify(result).substring(0, 100) : 'null/undefined'));
         break;
       case 'get':
         result = Api.getDocument(payload.id);
