@@ -521,30 +521,60 @@
         self.showLoading(true);
 
         return new Promise((resolve, reject) => {
-          google.script.run
-            .withSuccessHandler(function(result) {
-              self.showLoading(false);
-              console.log(`API ${action}:`, result);
+          const handleSuccess = function(result) {
+            self.showLoading(false);
+            console.log(`API ${action}:`, result);
 
-              // Check if result is null or undefined
-              if (!result) {
-                console.error(`API ${action} returned null/undefined`);
-                reject(new Error(`API ${action} ไม่ได้ส่งผลลัพธ์กลับมา`));
-                return;
-              }
+            // Check if result is null or undefined
+            if (!result) {
+              console.error(`API ${action} returned null/undefined`);
+              reject(new Error(`API ${action} ไม่ได้ส่งผลลัพธ์กลับมา`));
+              return;
+            }
 
-              if (!result.ok && result.error) {
-                reject(new Error(result.error));
-              } else {
-                resolve(result);
-              }
-            })
-            .withFailureHandler(function(error) {
-              self.showLoading(false);
-              console.error(`API Error (${action}):`, error);
-              reject(error);
-            })
-            .runApi(action, payload);
+            if (!result.ok && result.error) {
+              reject(new Error(result.error));
+            } else {
+              resolve(result);
+            }
+          };
+
+          const handleFailure = function(error) {
+            self.showLoading(false);
+            console.error(`API Error (${action}):`, error);
+            reject(error);
+          };
+
+          // Route to standalone functions instead of runApi
+          switch (action) {
+            case 'ping':
+              google.script.run.withSuccessHandler(handleSuccess).withFailureHandler(handleFailure).testSimple();
+              break;
+            case 'list':
+              google.script.run.withSuccessHandler(handleSuccess).withFailureHandler(handleFailure).apiListDocuments(payload);
+              break;
+            case 'get':
+              google.script.run.withSuccessHandler(handleSuccess).withFailureHandler(handleFailure).runApi(action, payload);
+              break;
+            case 'create':
+              google.script.run.withSuccessHandler(handleSuccess).withFailureHandler(handleFailure).apiCreateDocument(payload);
+              break;
+            case 'update':
+              google.script.run.withSuccessHandler(handleSuccess).withFailureHandler(handleFailure).apiUpdateDocument(payload.id, payload);
+              break;
+            case 'delete':
+              google.script.run.withSuccessHandler(handleSuccess).withFailureHandler(handleFailure).apiDeleteDocument(payload.id);
+              break;
+            case 'upload':
+              google.script.run.withSuccessHandler(handleSuccess).withFailureHandler(handleFailure).apiUploadFile(payload);
+              break;
+            case 'stats':
+              google.script.run.withSuccessHandler(handleSuccess).withFailureHandler(handleFailure).apiGetStats();
+              break;
+            default:
+              // Fallback to runApi for other actions
+              google.script.run.withSuccessHandler(handleSuccess).withFailureHandler(handleFailure).runApi(action, payload);
+          }
         });
       },
 

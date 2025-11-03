@@ -214,6 +214,77 @@ function testListDocuments(payload) {
 }
 
 /**
+ * Standalone API handlers (not using Api object methods)
+ * These are designed to work better with google.script.run
+ */
+
+function apiListDocuments(payload) {
+  Logger.log('[apiListDocuments] Called with: ' + JSON.stringify(payload || {}).substring(0, 100));
+  try {
+    var result = Api.listDocuments(payload || {});
+    Logger.log('[apiListDocuments] Got result, ok=' + (result ? result.ok : 'null'));
+    return result;
+  } catch (error) {
+    Logger.log('[apiListDocuments] ERROR: ' + error.toString());
+    return {
+      ok: false,
+      error: error.toString(),
+      data: { documents: [], pagination: { page: 1, pageSize: 10, total: 0, totalPages: 0 } }
+    };
+  }
+}
+
+function apiGetStats() {
+  Logger.log('[apiGetStats] Called');
+  try {
+    return Api.getStats();
+  } catch (error) {
+    Logger.log('[apiGetStats] ERROR: ' + error.toString());
+    return { ok: false, error: error.toString() };
+  }
+}
+
+function apiCreateDocument(payload) {
+  Logger.log('[apiCreateDocument] Called');
+  try {
+    return Api.createDocument(payload);
+  } catch (error) {
+    Logger.log('[apiCreateDocument] ERROR: ' + error.toString());
+    return { ok: false, error: error.toString() };
+  }
+}
+
+function apiUpdateDocument(id, payload) {
+  Logger.log('[apiUpdateDocument] Called for id: ' + id);
+  try {
+    return Api.updateDocument(id, payload);
+  } catch (error) {
+    Logger.log('[apiUpdateDocument] ERROR: ' + error.toString());
+    return { ok: false, error: error.toString() };
+  }
+}
+
+function apiDeleteDocument(id) {
+  Logger.log('[apiDeleteDocument] Called for id: ' + id);
+  try {
+    return Api.deleteDocument(id);
+  } catch (error) {
+    Logger.log('[apiDeleteDocument] ERROR: ' + error.toString());
+    return { ok: false, error: error.toString() };
+  }
+}
+
+function apiUploadFile(payload) {
+  Logger.log('[apiUploadFile] Called');
+  try {
+    return Api.uploadFile(payload);
+  } catch (error) {
+    Logger.log('[apiUploadFile] ERROR: ' + error.toString());
+    return { ok: false, error: error.toString() };
+  }
+}
+
+/**
  * Universal API wrapper (callable from google.script.run)
  * This function routes all API calls from the frontend
  */
