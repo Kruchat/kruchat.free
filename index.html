@@ -3,825 +3,493 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ประทับตรา สำเนาถูกต้อง</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.3.1/jspdf.umd.min.js"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <title>ระบบบันทึกการพัฒนาตนเองของครู v2.0</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;600;700&display=swap');
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: "Poppins", sans-serif;
         }
+
         body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            font-family: 'Sarabun', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            background: #FFFFFF;
             padding: 20px;
         }
-        ::selection {
-            color: #FFFFFF;
-            background: #2E3192;
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
         }
-        .wrapper {
-            width: 450px;
-            background: #FFFFFF;
-            border-radius: 12px;
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
             padding: 30px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            border: 1px solid #E9ECEF;
-        }
-        .wrapper header {
-            color: #2E3192;
-            font-size: 28px;
-            font-weight: 600;
-            text-align: center;
-            margin-bottom: 20px;
-        }
-        .wrapper form {
-            height: 180px;
-            display: flex;
-            cursor: pointer;
-            margin: 20px 0;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            border-radius: 10px;
-            border: 2px dashed #2E3192;
-            background: #F8F9FA;
-            transition: all 0.3s ease;
-        }
-        .wrapper form:hover {
-            background: #F4F5F7;
-            border-color: #1A237E;
-        }
-        form :where(i, p) {
-            color: #2E3192;
-        }
-        form i {
-            font-size: 50px;
-        }
-        form p {
-            margin-top: 15px;
-            font-size: 16px;
-            color: #555555;
-        }
-        section .row {
-            margin-bottom: 12px;
-            background: #F8F9FA;
-            list-style: none;
-            padding: 15px 20px;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: background 0.3s ease;
-        }
-        section .row:hover {
-            background: #F4A261;
-            color: #FFFFFF;
-        }
-        section .row:hover i {
-            color: #FFFFFF;
-        }
-        section .row i {
-            color: #2E3192;
-            font-size: 30px;
-        }
-        section .details span {
-            font-size: 14px;
-            color: #666666;
-        }
-        .progress-area .row .content {
-            width: 100%;
-            margin-left: 15px;
-        }
-        .progress-area .details {
-            display: flex;
-            align-items: center;
-            margin-bottom: 7px;
-            justify-content: space-between;
-        }
-        .progress-area .content .progress-bar {
-            height: 6px;
-            width: 100%;
-            margin-bottom: 4px;
-            background: #E9ECEF;
-            border-radius: 30px;
-        }
-        .content .progress-bar .progress {
-            height: 100%;
-            width: 0%;
-            background: #2E3192;
-            border-radius: inherit;
-            transition: width 0.3s ease;
-        }
-        .uploaded-area {
-            max-height: 232px;
-            overflow-y: scroll;
-        }
-        .uploaded-area.onprogress {
-            max-height: 150px;
-        }
-        .uploaded-area::-webkit-scrollbar {
-            width: 0px;
-        }
-        .uploaded-area .row .content {
-            display: flex;
-            align-items: center;
-        }
-        .uploaded-area .row .details {
-            display: flex;
-            margin-left: 15px;
-            flex-direction: column;
-        }
-        .uploaded-area .row .details .size {
-            color: #777777;
-            font-size: 11px;
-        }
-        .uploaded-area i.fa-check {
-            font-size: 16px;
-            color: #2E3192;
-        }
-        canvas {
-            border: 1px solid #E9ECEF;
-            margin: 20px auto;
-            max-width: 100%;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-        }
-        #position-buttons {
-            margin: 20px 0;
-            display: none;
             text-align: center;
         }
-        button {
-            padding: 12px 25px;
-            margin: 5px;
-            cursor: pointer;
-            background-color: #2E3192;
-            color: #FFFFFF;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
         }
-        button:hover {
-            background-color: #1A237E;
-            transform: translateY(-2px);
-        }
-        .stamp {
-            display: none;
-        }
-        .name-input-container {
-            margin: 20px 0;
-            text-align: center;
+
+        .nav {
             display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .name-input-container label {
-            color: #2E3192;
-            font-size: 16px;
-            font-weight: 500;
-            margin-right: 20px;
-        }
-        .name-input-container input[type="text"] {
-            padding: 12px 18px;
-            font-size: 16px;
-            border: 2px solid #2E3192;
-            border-radius: 10px;
-            width: 320px;
-            outline: none;
-            background: #F8F9FA;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
-        }
-        .name-input-container input[type="text"]:focus {
-            border-color: #1A237E;
-            box-shadow: 0 0 10px rgba(46, 49, 146, 0.3);
-            background: #FFFFFF;
-        }
-        .underline-option {
-            margin: 15px 0;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .underline-option input[type="checkbox"] {
-            display: none;
-        }
-        .underline-option .checkbox-custom {
-            width: 28px;
-            height: 28px;
-            border: 2px solid #2E3192;
-            border-radius: 6px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            background: #F8F9FA;
-            transition: all 0.3s ease;
-            margin-right: 12px;
-        }
-        .underline-option .checkbox-custom:hover {
-            border-color: #1A237E;
-        }
-        .underline-option input[type="checkbox"]:checked + .checkbox-custom {
-            background: #2E3192;
-            border-color: #1A237E;
-        }
-        .underline-option input[type="checkbox"]:checked + .checkbox-custom::after {
-            content: '\2713';
-            color: #FFFFFF;
-            font-size: 18px;
-        }
-        .underline-option label {
-            color: #2E3192;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-        .color-option {
-            margin: 15px 0;
-            text-align: center;
-            display: flex;
-            align-items: center;
+            gap: 10px;
             justify-content: center;
             flex-wrap: wrap;
+            margin-top: 20px;
         }
-        .color-option label {
-            color: #2E3192;
-            font-size: 16px;
-            font-weight: 500;
-            margin-right: 20px;
-        }
-        .color-option button {
+
+        .btn {
             padding: 10px 20px;
-            margin: 5px;
-            cursor: pointer;
             border: none;
             border-radius: 8px;
-            font-size: 14px;
-            font-weight: 500;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            width: 80px;
+            cursor: pointer;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 1rem;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: white;
+            color: #667eea;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .main {
+            padding: 30px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h3 {
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+
+        .form-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-family: 'Sarabun', sans-serif;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .file-upload {
+            border: 2px dashed #667eea;
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload:hover {
+            background: #f0f4ff;
+            border-color: #764ba2;
+        }
+
+        .file-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+        }
+
+        .file-icon {
+            width: 40px;
             height: 40px;
             display: flex;
             align-items: center;
             justify-content: center;
-            text-align: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 8px;
         }
-        .color-option button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+
+        .logs-list {
+            display: grid;
+            gap: 20px;
         }
-        .color-option #color-blue {
-            background-color: #000080;
-            color: #FFFFFF;
+
+        .log-card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: transform 0.3s, box-shadow 0.3s;
         }
-        .color-option #color-black {
-            background-color: #000000;
-            color: #FFFFFF;
+
+        .log-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
         }
-        .color-option #color-red {
-            background-color: #FF0000;
-            color: #FFFFFF;
-        }
-        .spacing-option {
-            margin: 15px 0;
-            text-align: center;
+
+        .log-header {
             display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+
+        .log-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .log-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
             align-items: center;
             justify-content: center;
         }
-        .spacing-option label {
-            color: #2E3192;
-            font-size: 16px;
-            font-weight: 500;
-            margin-right: 20px;
+
+        .modal.active {
+            display: flex;
         }
-        .spacing-option input[type="number"] {
-            padding: 8px 12px;
-            font-size: 16px;
-            border: 2px solid #2E3192;
+
+        .modal-content {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #667eea;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .sync-status {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: white;
+            padding: 15px 20px;
+            border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.9rem;
+        }
+
+        .spinner {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filters select,
+        .filters input {
+            padding: 10px;
+            border: 2px solid #e0e0e0;
             border-radius: 8px;
-            width: 80px;
-            outline: none;
-            background: #F8F9FA;
-            transition: border-color 0.3s ease, box-shadow 0.3s ease, background 0.3s ease;
+            font-family: 'Sarabun', sans-serif;
         }
-        .spacing-option input[type="number"]:focus {
-            border-color: #1A237E;
-            box-shadow: 0 0 8px rgba(46, 49, 146, 0.3);
-            background: #FFFFFF;
-        }
-        .swal2-title {
-            color: #2E3192 !important;
-            font-size: 24px !important;
-            font-weight: 600 !important;
-        }
-        .swal2-html-container {
-            color: #555555 !important;
-            font-size: 16px !important;
-        }
-        .swal2-confirm {
-            background-color: #2E3192 !important;
-            border-radius: 8px !important;
-            font-size: 16px !important;
-            padding: 12px 25px !important;
-            transition: background-color 0.3s ease !important;
-        }
-        .swal2-confirm:hover {
-            background-color: #1A237E !important;
-        }
-        .swal2-cancel {
-            background-color: #F4A261 !important;
-            border-radius: 8px !important;
-            font-size: 16px !important;
-            padding: 12px 25px !important;
-            transition: background-color 0.3s ease !important;
-        }
-        .swal2-cancel:hover {
-            background-color: #E88C3A !important;
-        }
-        .swal2-popup {
-            border-radius: 12px !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-            border: 1px solid #E9ECEF !important;
-        }
-        .swal2-icon {
-            border-color: #2E3192 !important;
-            color: #2E3192 !important;
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.5rem;
+            }
+
+            .nav {
+                flex-direction: column;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="wrapper">
-        <header>ประทับตรา สำเนาถูกต้อง</header>
-        <form action="#">
-            <input class="file-input" type="file" name="file" accept="image/*,application/pdf" hidden>
-            <i class="fas fa-cloud-upload-alt"></i>
-            <p>Browse File to Upload</p>
-        </form>
-        <section class="progress-area"></section>
-        <section class="uploaded-area"></section>
-    </div>
-    <div class="name-input-container">
-        <label for="custom-name">ชื่อสำหรับประทับตรา:</label>
-        <input type="text" id="custom-name" value="นางสาวชลธิดา เสรีรัตน์วิภาชัย">
-    </div>
-    <div class="underline-option">
-        <input type="checkbox" id="underline" checked>
-        <div class="checkbox-custom" onclick="document.getElementById('underline').click()"></div>
-        <label for="underline">แสดงเส้นสำหรับเซ็นต์ชื่อ</label>
-    </div>
-    <div class="color-option">
-        <label>เลือกสีตัวอักษร:</label>
-        <button id="color-blue" onclick="setStampColor('#000080')">น้ำเงิน</button>
-        <button id="color-black" onclick="setStampColor('#000000')">ดำ</button>
-        <button id="color-red" onclick="setStampColor('#FF0000')">แดง</button>
-    </div>
-    <div class="spacing-option">
-        <label for="line-spacing">ระยะห่างระหว่างบรรทัด (px):</label>
-        <input type="number" id="line-spacing" value="60" min="0" step="1">
-    </div>
-    <div id="position-buttons">
-        <button onclick="setStampPosition('bottom-left')">ล่างซ้าย</button>
-        <button onclick="setStampPosition('bottom-center')">ล่างกลาง</button>
-        <button onclick="setStampPosition('bottom-right')">ล่างขวา</button>
-    </div>
-    <canvas id="canvas"></canvas>
-    <div id="stamp" class="stamp">
-        สำเนาถูกต้อง
-        ____________________
-        (นายชัชวาลย์ ทะสิละ)
-    </div>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1><i class="fas fa-graduation-cap"></i> ระบบบันทึกการพัฒนาตนเองของครู</h1>
+            <p>Teacher Development Log System v2.0</p>
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <script>
-        const { jsPDF } = window.jspdf;
-        let currentFileType = '';
-        let imgData = null;
-        let pdfDoc = null;
-        let stampPosition = 'bottom-center';
-        let positionChangeTimeout = null;
-        let stampColor = '#000080'; // ค่าเริ่มต้นเป็นน้ำเงินเข้ม
-        let lineSpacing = 60; // ค่าเริ่มต้นของระยะห่างระหว่างบรรทัด
-        let uploadTimeout = null; // ตัวแปรสำหรับเก็บ timeout
+            <div class="nav">
+                <button class="btn btn-primary" data-action="profile">
+                    <i class="fas fa-user"></i> โปรไฟล์
+                </button>
+                <button class="btn btn-primary" data-action="categories">
+                    <i class="fas fa-tags"></i> จัดการประเภท
+                </button>
+                <button class="btn btn-primary" data-action="google-sync">
+                    <i class="fas fa-cloud"></i> Google Sync
+                </button>
+                <button class="btn btn-primary" data-action="export">
+                    <i class="fas fa-download"></i> ส่งออกข้อมูล
+                </button>
+                <button class="btn btn-primary" data-action="charts">
+                    <i class="fas fa-chart-bar"></i> กราฟสถิติ
+                </button>
+            </div>
+        </div>
 
-        const form = document.querySelector("form"),
-              fileInput = document.querySelector(".file-input"),
-              progressArea = document.querySelector(".progress-area"),
-              uploadedArea = document.querySelector(".uploaded-area"),
-              positionButtons = document.getElementById('position-buttons'),
-              lineSpacingInput = document.getElementById('line-spacing');
+        <!-- Main Content -->
+        <div class="main">
+            <!-- Statistics -->
+            <div class="stats" id="stats"></div>
 
-        form.addEventListener("click", () => {
-            fileInput.click();
-        });
-
-        // เพิ่ม event listener สำหรับการเปลี่ยนระยะห่าง
-        lineSpacingInput.addEventListener('input', () => {
-            lineSpacing = parseInt(lineSpacingInput.value) || 60; // อัปเดตค่า lineSpacing
-            const canvas = document.getElementById('canvas');
-            if (currentFileType === 'image' && imgData) {
-                renderImage(imgData);
-            } else if (currentFileType === 'pdf' && pdfDoc) {
-                renderPDF(pdfDoc, 1);
-            }
-        });
-
-        fileInput.onchange = ({target}) => {
-            let files = target.files;
-            if (files.length > 0) {
-                // ล้าง timeout เก่า (ถ้ามี) เพื่อป้องกัน Popup ซ้ำ
-                if (uploadTimeout) {
-                    clearTimeout(uploadTimeout);
-                }
-
-                positionButtons.style.display = 'none';
-                progressArea.innerHTML = '';
-                uploadedArea.innerHTML = '';
-                Array.from(files).forEach(file => {
-                    let fileName = file.name;
-                    if (fileName.length >= 12) {
-                        let splitName = fileName.split('.');
-                        fileName = splitName[0].substring(0, 13) + "... ." + splitName[1];
-                    }
-                    uploadFile(file, fileName);
-                });
-            }
-        };
-
-        function uploadFile(file, name) {
-            const reader = new FileReader();
-
-            reader.onprogress = ({loaded, total}) => {
-                let fileLoaded = Math.floor((loaded / total) * 100);
-                let fileTotal = Math.floor(total / 1000);
-                let fileSize = (fileTotal < 1024) ? fileTotal + " KB" : (loaded / (1024*1024)).toFixed(2) + " MB";
-                let progressHTML = `<li class="row">
-                                      <i class="fas fa-file-alt"></i>
-                                      <div class="content">
-                                        <div class="details">
-                                          <span class="name">${name} • Uploading</span>
-                                          <span class="percent">${fileLoaded}%</span>
-                                        </div>
-                                        <div class="progress-bar">
-                                          <div class="progress" style="width: ${fileLoaded}%"></div>
-                                        </div>
-                                      </div>
-                                    </li>`;
-                uploadedArea.classList.add("onprogress");
-                progressArea.innerHTML = progressHTML;
-            };
-
-            reader.onload = async (e) => {
-                progressArea.innerHTML = "";
-                let fileTotal = Math.floor(file.size / 1000);
-                let fileSize = (fileTotal < 1024) ? fileTotal + " KB" : (file.size / (1024*1024)).toFixed(2) + " MB";
-                let uploadedHTML = `<li class="row">
-                                      <div class="content upload">
-                                        <i class="fas fa-file-alt"></i>
-                                        <div class="details">
-                                          <span class="name">${name} • Uploaded</span>
-                                          <span class="size">${fileSize}</span>
-                                        </div>
-                                      </div>
-                                      <i class="fas fa-check"></i>
-                                    </li>`;
-                uploadedArea.classList.remove("onprogress");
-                uploadedArea.insertAdjacentHTML("afterbegin", uploadedHTML);
-
-                if (uploadedArea.children.length === 1) {
-                    const canvas = document.getElementById('canvas');
-                    if (file.type.startsWith('image/')) {
-                        currentFileType = 'image';
-                        imgData = e.target.result;
-                        renderImage(imgData);
-                        positionButtons.style.display = 'block';
-                    } else if (file.type === 'application/pdf') {
-                        currentFileType = 'pdf';
-                        const typedArray = new Uint8Array(e.target.result);
-                        try {
-                            pdfDoc = await pdfjsLib.getDocument({ data: typedArray }).promise;
-                            await renderPDF(pdfDoc, 1);
-                            positionButtons.style.display = 'block';
-                        } catch (error) {
-                            console.error("Error loading PDF:", error);
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'เกิดข้อผิดพลาด',
-                                text: 'ไม่สามารถโหลดไฟล์ PDF ได้',
-                                confirmButtonText: 'ตกลง'
-                            });
-                        }
-                    }
-                    // แสดงตราประทับที่ล่างกลางทันทีหลังอัปโหลด
-                    drawStamp(canvas, null, canvas.width, canvas.height);
-
-                    // ตั้งเวลา 10 วินาทีเพื่อแสดง Popup
-                    uploadTimeout = setTimeout(() => {
-                        showSummaryPopup();
-                    }, 10000);
-                }
-            };
-
-            reader.onerror = () => {
-                console.error("Error reading file");
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถอ่านไฟล์ได้',
-                    confirmButtonText: 'ตกลง'
-                });
-            };
-
-            if (file.type.startsWith('image/')) {
-                reader.readAsDataURL(file);
-            } else if (file.type === 'application/pdf') {
-                reader.readAsArrayBuffer(file);
-            }
-        }
-
-        function showSummaryPopup() {
-            const customName = document.getElementById('custom-name').value || "นางสาวชลธิดา เสรีรัตน์วิภาชัย";
-            const showUnderline = document.getElementById('underline').checked;
-            const colorName = getColorName(stampColor);
-            const positionText = getPositionText(stampPosition);
-
-            Swal.fire({
-                title: 'สรุปการตั้งค่า',
-                html: `
-                    <div style="text-align: left; font-size: 16px;">
-                        <p><strong>ชื่อ:</strong> ${customName}</p>
-                        <p><strong>สีตัวอักษร:</strong> ${colorName}</p>
-                        <p><strong>ระยะห่างระหว่างบรรทัด:</strong> ${lineSpacing} px</p>
-                        <p><strong>ตำแหน่งตราประทับ:</strong> ${positionText}</p>
-                        <p><strong>แสดงเส้นสำหรับเซ็นต์ชื่อ:</strong> ${showUnderline ? 'ใช่' : 'ไม่'}</p>
+            <!-- Add New Activity Form -->
+            <div class="form-section">
+                <h2><i class="fas fa-plus-circle"></i> เพิ่มบันทึกใหม่</h2>
+                <form id="activityForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar"></i> วันที่</label>
+                        <input type="date" name="date" required>
                     </div>
-                `,
-                icon: 'info',
-                showCancelButton: true,
-                confirmButtonText: 'ยืนยัน',
-                cancelButtonText: 'ยกเลิก',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    downloadFile();
-                }
-            });
-        }
 
-        function getColorName(color) {
-            switch (color) {
-                case '#000080': return 'น้ำเงิน';
-                case '#000000': return 'ดำ';
-                case '#FF0000': return 'แดง';
-                default: return 'ไม่ระบุ';
-            }
-        }
+                    <div class="form-group">
+                        <label><i class="fas fa-heading"></i> หัวข้อกิจกรรม</label>
+                        <input type="text" name="title" required>
+                    </div>
 
-        function renderImage(imgData) {
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
-            img.onload = function() {
-                canvas.width = img.width;
-                canvas.height = img.height;
-                ctx.drawImage(img, 0, 0);
-                drawStamp(canvas, null, canvas.width, canvas.height); // อัปเดตตราประทับทันที
-            };
-            img.onerror = function() {
-                console.error("Error loading image");
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถโหลดภาพได้',
-                    confirmButtonText: 'ตกลง'
-                });
-            };
-            img.src = imgData;
-        }
+                    <div class="form-group">
+                        <label><i class="fas fa-tag"></i> ประเภท</label>
+                        <select name="category" id="categorySelect" required></select>
+                    </div>
 
-        async function renderPDF(pdfDoc, pageNum) {
-            try {
-                const page = await pdfDoc.getPage(pageNum);
-                const viewport = page.getViewport({ scale: 2.0 });
-                const canvas = document.getElementById('canvas');
-                const ctx = canvas.getContext('2d');
-                canvas.height = viewport.height;
-                canvas.width = viewport.width;
-                const renderContext = {
-                    canvasContext: ctx,
-                    viewport: viewport
-                };
-                await page.render(renderContext).promise;
-                drawStamp(canvas, null, canvas.width, canvas.height); // อัปเดตตราประทับทันที
-            } catch (error) {
-                console.error("Error rendering PDF:", error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'เกิดข้อผิดพลาด',
-                    text: 'ไม่สามารถแสดง PDF ได้',
-                    confirmButtonText: 'ตกลง'
-                });
-            }
-        }
+                    <div class="form-group">
+                        <label><i class="fas fa-clock"></i> จำนวนชั่วโมง</label>
+                        <input type="number" name="hours" step="0.5" min="0" required>
+                    </div>
 
-        function setStampPosition(position) {
-            if (positionChangeTimeout) {
-                clearTimeout(positionChangeTimeout);
-            }
+                    <div class="form-group">
+                        <label><i class="fas fa-laptop"></i> รูปแบบ</label>
+                        <select name="format" required>
+                            <option value="onsite">Onsite</option>
+                            <option value="online">Online</option>
+                            <option value="hybrid">Hybrid</option>
+                        </select>
+                    </div>
 
-            stampPosition = position;
-            const canvas = document.getElementById('canvas');
+                    <div class="form-group">
+                        <label><i class="fas fa-certificate"></i> เกียรติบัตร/หลักฐาน</label>
+                        <div class="file-upload" data-upload="certificates">
+                            <i class="fas fa-cloud-upload-alt" style="font-size: 3rem; color: #667eea; margin-bottom: 10px;"></i>
+                            <p>คลิกหรือลากไฟล์มาวางที่นี่</p>
+                            <small>รองรับทุกประเภทไฟล์</small>
+                        </div>
+                        <input type="file" id="fileInput" class="hidden" multiple accept="*/*">
+                        <div class="file-list" id="fileList"></div>
+                    </div>
 
-            if (currentFileType === 'image' && imgData) {
-                renderImage(imgData);
-            } else if (currentFileType === 'pdf' && pdfDoc) {
-                renderPDF(pdfDoc, 1);
-            } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'คำเตือน',
-                    text: 'กรุณารอให้ไฟล์โหลดเสร็จสมบูรณ์ก่อนดำเนินการ',
-                    confirmButtonText: 'ตกลง'
-                });
-                return;
-            }
+                    <div class="form-group">
+                        <label><i class="fas fa-align-left"></i> รายละเอียด</label>
+                        <textarea name="description" rows="3"></textarea>
+                    </div>
 
-            positionChangeTimeout = setTimeout(() => {
-                Swal.fire({
-                    title: 'ยืนยันตำแหน่งตราประทับ',
-                    text: `คุณเลือกตำแหน่ง "${getPositionText(position)}" ต้องการยืนยันหรือไม่?`,
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonText: 'ยืนยัน',
-                    cancelButtonText: 'ยกเลิก',
-                    reverseButtons: true
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        downloadFile();
-                    } else {
-                        stampPosition = 'bottom-center';
-                        if (currentFileType === 'image' && imgData) {
-                            renderImage(imgData);
-                        } else if (currentFileType === 'pdf' && pdfDoc) {
-                            renderPDF(pdfDoc, 1);
-                        }
-                    }
-                });
-            }, 5000);
-        }
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        <i class="fas fa-save"></i> บันทึก
+                    </button>
+                </form>
+            </div>
 
-        function getPositionText(position) {
-            switch (position) {
-                case 'bottom-left': return 'ล่างซ้าย';
-                case 'bottom-center': return 'ล่างกลาง';
-                case 'bottom-right': return 'ล่างขวา';
-                default: return '';
-            }
-        }
+            <!-- Filters -->
+            <div class="filters">
+                <select id="filterCategory">
+                    <option value="">ทุกประเภท</option>
+                </select>
+                <select id="filterFormat">
+                    <option value="">ทุกรูปแบบ</option>
+                    <option value="onsite">Onsite</option>
+                    <option value="online">Online</option>
+                    <option value="hybrid">Hybrid</option>
+                </select>
+                <input type="text" id="searchInput" placeholder="ค้นหา...">
+            </div>
 
-        function drawStamp(canvas, callback, pageWidth, pageHeight) {
-            const ctx = canvas.getContext('2d');
-            ctx.font = 'bold 32px Arial';
-            ctx.fillStyle = stampColor; // ใช้สีจาก stampColor
+            <!-- Logs List -->
+            <h2><i class="fas fa-list"></i> รายการบันทึก</h2>
+            <div class="logs-list" id="logsList"></div>
+        </div>
+    </div>
 
-            const customName = document.getElementById('custom-name').value || "นางสาวชลธิดา เสรีรัตน์วิภาชัย";
-            const showUnderline = document.getElementById('underline').checked;
+    <!-- Sync Status -->
+    <div class="sync-status hidden" id="syncStatus">
+        <i class="fas fa-sync spinner"></i>
+        <span>กำลัง sync...</span>
+    </div>
 
-            let stampText = "สำเนาถูกต้อง\n";
-            if (showUnderline) {
-                stampText += "____________________\n";
-            }
-            stampText += `(${customName})`;
+    <!-- Modals -->
+    <div class="modal" id="viewModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>รายละเอียด</h2>
+                <button class="close-btn" data-close="viewModal">&times;</button>
+            </div>
+            <div id="viewContent"></div>
+        </div>
+    </div>
 
-            const lines = stampText.split('\n');
-            const lineHeight = lineSpacing; // ใช้ค่า lineSpacing ที่ผู้ใช้กำหนด
+    <div class="modal" id="editModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>แก้ไข</h2>
+                <button class="close-btn" data-close="editModal">&times;</button>
+            </div>
+            <form id="editForm">
+                <!-- Will be populated dynamically -->
+            </form>
+        </div>
+    </div>
 
-            let x, y;
-            const maxWidth = Math.max(...lines.map(line => ctx.measureText(line).width));
+    <div class="modal" id="categoryModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>จัดการประเภท</h2>
+                <button class="close-btn" data-close="categoryModal">&times;</button>
+            </div>
+            <div id="categoryContent"></div>
+        </div>
+    </div>
 
-            if (stampPosition === 'bottom-left') {
-                x = 40;
-                y = pageHeight - (lines.length * lineHeight) - 40;
-            } else if (stampPosition === 'bottom-center') {
-                x = (pageWidth - maxWidth) / 2;
-                y = pageHeight - (lines.length * lineHeight) - 40;
-            } else if (stampPosition === 'bottom-right') {
-                x = pageWidth - maxWidth - 40;
-                y = pageHeight - (lines.length * lineHeight) - 40;
-            }
+    <div class="modal" id="googleSyncModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Google Sync Settings</h2>
+                <button class="close-btn" data-close="googleSyncModal">&times;</button>
+            </div>
+            <div id="googleSyncContent"></div>
+        </div>
+    </div>
 
-            lines.forEach((line, index) => {
-                const lineWidth = ctx.measureText(line).width;
-                const offsetX = (maxWidth - lineWidth) / 2;
-                ctx.fillText(line, x + offsetX, y + (index * lineHeight));
-            });
-
-            if (callback) callback();
-        }
-
-        function setStampColor(color) {
-            stampColor = color;
-            const canvas = document.getElementById('canvas');
-            if (currentFileType === 'image' && imgData) {
-                renderImage(imgData);
-            } else if (currentFileType === 'pdf' && pdfDoc) {
-                renderPDF(pdfDoc, 1);
-            }
-        }
-
-        async function downloadFile() {
-            const canvas = document.getElementById('canvas');
-            if (currentFileType === 'image') {
-                const link = document.createElement('a');
-                link.download = 'stamped_image.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'ดาวน์โหลดสำเร็จ',
-                    text: 'ไฟล์ภาพของคุณได้ถูกดาวน์โหลดแล้ว!',
-                    confirmButtonText: 'ตกลง',
-                    timer: 3000,
-                    timerProgressBar: true
-                });
-            } else if (currentFileType === 'pdf' && pdfDoc) {
-                try {
-                    const numPages = pdfDoc.numPages;
-                    let pdf = null;
-
-                    for (let i = 1; i <= numPages; i++) {
-                        const page = await pdfDoc.getPage(i);
-                        const viewport = page.getViewport({ scale: 2.0 });
-                        const originalViewport = page.getViewport({ scale: 1.0 });
-
-                        canvas.width = viewport.width;
-                        canvas.height = viewport.height;
-                        const ctx = canvas.getContext('2d');
-                        const renderContext = {
-                            canvasContext: ctx,
-                            viewport: viewport
-                        };
-                        await page.render(renderContext).promise;
-
-                        drawStamp(canvas, null, viewport.width, viewport.height);
-
-                        const pageWidth = originalViewport.width / 72 * 25.4;
-                        const pageHeight = originalViewport.height / 72 * 25.4;
-
-                        if (i === 1) {
-                            pdf = new jsPDF({
-                                orientation: pageWidth > pageHeight ? 'landscape' : 'portrait',
-                                unit: 'mm',
-                                format: [pageWidth, pageHeight]
-                            });
-                        } else {
-                            pdf.addPage([pageWidth, pageHeight], pageWidth > pageHeight ? 'landscape' : 'portrait');
-                        }
-
-                        const imgData = canvas.toDataURL('image/png', 1.0);
-                        pdf.setPage(i);
-                        pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, pageHeight, null, 'SLOW');
-                    }
-
-                    pdf.save('stamped_pdf.pdf');
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'ดาวน์โหลดสำเร็จ',
-                        text: 'ไฟล์ PDF ของคุณได้ถูกดาวน์โหลดแล้ว!',
-                        confirmButtonText: 'ตกลง',
-                        timer: 3000,
-                        timerProgressBar: true
-                    });
-                } catch (error) {
-                    console.error("Error downloading PDF:", error);
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'เกิดข้อผิดพลาด',
-                        text: 'ไม่สามารถดาวน์โหลด PDF ได้',
-                        confirmButtonText: 'ตกลง'
-                    });
-                }
-            } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'คำเตือน',
-                    text: 'กรุณารอให้ไฟล์ PDF โหลดเสร็จสมบูรณ์ก่อนดำเนินการ',
-                    confirmButtonText: 'ตกลง'
-                });
-            }
-        }
-    </script>
+    <script src="app-new.js"></script>
 </body>
 </html>
